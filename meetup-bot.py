@@ -3,6 +3,7 @@ import os
 import flask
 
 import hooks
+import messenger_profile
 
 
 app = flask.Flask(__name__)
@@ -31,5 +32,8 @@ def webhook():
     return 'Success.', 200
 
 
+messenger_profile.set_get_started_button(os.environ['ACCESS_TOKEN'], 'get started payload')
+
+
 if __name__ == '__main__':
-    app.run(debug=true)
+    app.run(debug=True)
