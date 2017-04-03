@@ -3,13 +3,16 @@ import json
 import requests
 
 
-def send_main_menu_message(access_token, user_id):
+def send_main_menu(access_token, user_id):
+    ''' Makes use of Quick Replies: 
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
+    '''
     main_menu_message_body = {
             'text': 'Чем могу помочь?',
             'quick_replies': [
                 {
                     'content_type': 'text',
-                    'title': 'Расписание',
+                    'title': 'Все доклады',
                     'payload': 'schedule payload'
                 },
                 {
@@ -33,6 +36,94 @@ def send_main_menu_message(access_token, user_id):
             'message': main_menu_message_body,
             }
     return send_message_to_facebook(access_token, main_menu)
+
+
+def form_talk_subtitle(talk):
+    speaker = talk.get('speaker', '')
+    description = talk.get('description', '')
+    return '%s: %s' % (speaker, description)
+
+
+def send_schedule(access_token, user_id, talks):
+    ''' Makes use of Generic Template: 
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
+    '''
+    elements = []
+    for talk in talks:
+        element = {
+                'title': talk['title'],
+                'image_url': talk.get('image_url'),
+                'subtitle': form_talk_subtitle(talk),
+                'buttons': [
+                    {
+                        'type': 'postback',
+                        'title': 'Описание доклада',
+                        'payload': 'info talk %d' % talk['id']
+                    },
+                    {
+                        'type': 'postback',
+                        'title': 'Лайк',
+                        'payload': 'like talk %d' % talk['id']
+                    }
+                ]
+            }
+        elements.append(element)
+
+    schedule_message_body = {
+            'attachment': {
+                'type': 'template',
+                'payload': {
+                    'template_type': 'generic',
+                    'elements': elements
+                    }
+                }
+            }
+
+    schedule = {
+            'recipient': {
+                'id': user_id
+                },
+            'message': schedule_message_body
+            }
+    send_message_to_facebook(access_token, schedule)
+
+
+def send_more_talk_info(access_token, user_id, payload, talks):
+    ''' Send a simple Facebook message:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+    '''
+    talk_id = int(payload.split(' ')[-1]) - 1
+    title = talks[talk_id]['title']
+    speaker = talks[talk_id]['speaker']
+    description = talks[talk_id].get('description', 'Нет описания.')
+    more_info_text = '"%s"\n\n%s:\n%s' % (title, speaker, description)
+    more_info = {
+            'recipient': {
+                'id': user_id
+                },
+            'message': {
+                'text': more_info_text
+                }
+            }
+    return send_message_to_facebook(access_token, more_info)
+
+
+def send_like_confirmation(access_token, user_id, payload, talks):
+    ''' Send a simple Facebook message:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+    '''
+    talk_id = int(payload.split(' ')[-1]) - 1
+    title = talks[talk_id]['title']
+    confirmation_text = 'Вы поставили лайк докладу "%s".' % title
+    confirmation = {
+            'recipient': {
+                'id': user_id
+                },
+            'message': {
+                'text': confirmation_text
+                }
+            }
+    return send_message_to_facebook(access_token, confirmation)
 
 
 def send_message_to_facebook(access_token, message_data):
