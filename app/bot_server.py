@@ -38,13 +38,11 @@ def webhook():
         elif message_processing.is_like_talk_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
             # TODO: actually set like
+
             messaging.send_like_confirmation(access_token, sender_id, payload)
 
         messaging.send_main_menu(access_token, sender_id)
     return 'Success.', 200
-
-
-messenger_profile.set_get_started_button(os.environ['ACCESS_TOKEN'], 'get started payload')
 
 
 if __name__ == '__main__':
