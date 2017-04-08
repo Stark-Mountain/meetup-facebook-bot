@@ -122,6 +122,24 @@ def send_like_confirmation(access_token, user_id, talk_id):
     return send_message_to_facebook(access_token, confirmation)
 
 
+def send_unlike_confirmation(access_token, user_id, talk_id):
+    ''' Send a simple Facebook message:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+    '''
+    talk = models.Talk.query.get(talk_id)
+    title = talk.title
+    confirmation_text = 'Вы убрали лайк с доклада "%s".' % title
+    confirmation = {
+            'recipient': {
+                'id': user_id
+                },
+            'message': {
+                'text': confirmation_text
+                }
+            }
+    return send_message_to_facebook(access_token, confirmation)
+
+
 def send_message_to_facebook(access_token, message_data):
     headers = {
             'Content-Type': 'application/json',

@@ -3,8 +3,8 @@ import os
 import flask
 
 from app import app
+from app import likes
 from .messenger import messaging
-from .messenger import messenger_profile
 from .messenger import message_processing
 
 
@@ -39,9 +39,12 @@ def webhook():
         elif message_processing.is_like_talk_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
             talk_id = int(payload.split(' ')[-1])
-            # TODO: actually set like
-            messaging.send_like_confirmation(access_token, sender_id, talk_id)
-
+            if likes.is_like_set(sender_id, talk_id):
+                likes.unset_like(sender_id, talk_id)
+                messaging.send_unlike_confirmation(access_token, sender_id, talk_id)
+            else:
+                likes.set_like(sender_id, talk_id)
+                messaging.send_like_confirmation(access_token, sender_id, talk_id)
         messaging.send_main_menu(access_token, sender_id)
     return 'Success.', 200
 
