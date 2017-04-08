@@ -8,3 +8,4 @@ FIXME: write the description
 4. Set environment variable: `page_id`: Then navigate to your page, click on information, scroll to the bottom of the page and copy PAGE_ID.
 5. Clone the repository.
 6. [Set Heroku as a remote repository](https://stackoverflow.com/questions/5129598/how-to-link-a-folder-with-an-existing-heroku-app) and push the source to `heroku master`, effectively deploying the app.
+7. Run `heroku run bash` and setup the database with command `python3 database_setup.py`. (Do this only once).
