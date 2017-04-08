@@ -10,6 +10,10 @@ def is_like_set(user_id, talk_id):
     return database.session.query(like.exists()).scalar()
 
 
+def count_likes(talk_id):
+    return models.Liker_Talk.query.filter_by(talk_id=talk_id).count()
+
+
 def set_like(user_id, talk_id):
     liked_talk = models.Talk.query.get(talk_id)
     if liked_talk is None:
@@ -33,3 +37,10 @@ def unset_like(user_id, talk_id):
             ).scalar()
     database.session.delete(like)
     database.session.commit()
+
+
+def reverse_like(user_id, talk_id):
+    if is_like_set(user_id, talk_id):
+        unset_like(user_id, talk_id)
+    else:
+        set_like(user_id, talk_id)

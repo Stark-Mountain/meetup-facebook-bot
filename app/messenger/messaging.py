@@ -3,6 +3,7 @@ import json
 import requests
 
 from app import models
+from app import likes
 
 
 def send_main_menu(access_token, user_id):
@@ -47,18 +48,24 @@ def send_schedule(access_token, user_id):
     elements = []
     talks = models.Talk.query.all()
     for talk in talks:
+        number_of_likes = likes.count_likes(talk.id)
+        element_subtitle = 'Лайков: %d\nСпикер: %s' % (number_of_likes, talk.speaker.name)
+        if likes.is_like_set(user_id, talk.id):
+            like_button_title = 'Убрать лайк'
+        else:
+            like_button_title = 'Поставить лайк'
         element = {
                 'title': talk.title,
-                'subtitle': '%s: %s' % (talk.speaker.name, talk.description or ''),
+                'subtitle': element_subtitle,
                 'buttons': [
                     {
                         'type': 'postback',
-                        'title': 'Описание доклада',
+                        'title': 'Получить подробности',
                         'payload': 'info talk %d' % talk.id
                     },
                     {
                         'type': 'postback',
-                        'title': 'Лайк',
+                        'title': like_button_title,
                         'payload': 'like talk %d' % talk.id
                     }
                 ]
@@ -102,42 +109,6 @@ def send_more_talk_info(access_token, user_id, talk_id):
                 }
             }
     return send_message_to_facebook(access_token, more_info)
-
-
-def send_like_confirmation(access_token, user_id, talk_id):
-    ''' Send a simple Facebook message:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
-    '''
-    talk = models.Talk.query.get(talk_id)
-    title = talk.title
-    confirmation_text = 'Вы поставили лайк докладу "%s".' % title
-    confirmation = {
-            'recipient': {
-                'id': user_id
-                },
-            'message': {
-                'text': confirmation_text
-                }
-            }
-    return send_message_to_facebook(access_token, confirmation)
-
-
-def send_unlike_confirmation(access_token, user_id, talk_id):
-    ''' Send a simple Facebook message:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
-    '''
-    talk = models.Talk.query.get(talk_id)
-    title = talk.title
-    confirmation_text = 'Вы убрали лайк с доклада "%s".' % title
-    confirmation = {
-            'recipient': {
-                'id': user_id
-                },
-            'message': {
-                'text': confirmation_text
-                }
-            }
-    return send_message_to_facebook(access_token, confirmation)
 
 
 def send_message_to_facebook(access_token, message_data):
