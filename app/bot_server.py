@@ -39,7 +39,7 @@ def webhook():
         elif message_processing.is_like_talk_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
             talk_id = int(payload.split(' ')[-1])
-            likes.reverse_like(sender_id, talk_id)
+            likes.revert_like(sender_id, talk_id)
             messaging.send_schedule(access_token, sender_id)
         messaging.send_main_menu(access_token, sender_id)
     return 'Success.', 200

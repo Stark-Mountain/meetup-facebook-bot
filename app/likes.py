@@ -39,7 +39,7 @@ def unset_like(user_id, talk_id):
     database.session.commit()
 
 
-def reverse_like(user_id, talk_id):
+def revert_like(user_id, talk_id):
     if is_like_set(user_id, talk_id):
         unset_like(user_id, talk_id)
     else:
