@@ -34,12 +34,13 @@ def webhook():
             messaging.send_schedule(access_token, sender_id)
         elif message_processing.is_more_talk_info_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
-            messaging.send_more_talk_info(access_token, sender_id, payload)
+            talk_id = int(payload.split(' ')[-1])
+            messaging.send_more_talk_info(access_token, sender_id, talk_id)
         elif message_processing.is_like_talk_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
+            talk_id = int(payload.split(' ')[-1])
             # TODO: actually set like
-
-            messaging.send_like_confirmation(access_token, sender_id, payload)
+            messaging.send_like_confirmation(access_token, sender_id, talk_id)
 
         messaging.send_main_menu(access_token, sender_id)
     return 'Success.', 200

@@ -84,11 +84,10 @@ def send_schedule(access_token, user_id):
     send_message_to_facebook(access_token, schedule)
 
 
-def send_more_talk_info(access_token, user_id, payload):
+def send_more_talk_info(access_token, user_id, talk_id):
     ''' Send a simple Facebook message:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
     '''
-    talk_id = int(payload.split(' ')[-1])
     talk = models.Talk.query.get(talk_id)
     title = talk.title
     speaker = talk.speaker.name
@@ -105,11 +104,10 @@ def send_more_talk_info(access_token, user_id, payload):
     return send_message_to_facebook(access_token, more_info)
 
 
-def send_like_confirmation(access_token, user_id, payload):
+def send_like_confirmation(access_token, user_id, talk_id):
     ''' Send a simple Facebook message:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
     '''
-    talk_id = int(payload.split(' ')[-1])
     talk = models.Talk.query.get(talk_id)
     title = talk.title
     confirmation_text = 'Вы поставили лайк докладу "%s".' % title
