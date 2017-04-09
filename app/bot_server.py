@@ -1,17 +1,11 @@
 import os
-import json
 
 import flask
 
 from app import app
+from app import likes
 from .messenger import messaging
-from .messenger import messenger_profile
 from .messenger import message_processing
-
-
-def load_json_from_file(filename):
-    with open(filename) as json_file:
-        return json.load(json_file)
 
 
 @app.route('/')
@@ -33,25 +27,22 @@ def webhook():
     if facebook_request['object'] != 'page':
         return 'Object is not a page', 400
 
-    talks = load_json_from_file('app/example_talks.json')
     messaging_events = message_processing.extract_all_messaging_events(facebook_request['entry'])
     for messaging_event in messaging_events:
         sender_id = messaging_event['sender']['id']
         if message_processing.is_schedule_button_pressed(messaging_event):
-            messaging.send_schedule(access_token, sender_id, talks)
+            messaging.send_schedule(access_token, sender_id)
         elif message_processing.is_more_talk_info_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
-            messaging.send_more_talk_info(access_token, sender_id, payload, talks)
+            talk_id = int(payload.split(' ')[-1])
+            messaging.send_more_talk_info(access_token, sender_id, talk_id)
         elif message_processing.is_like_talk_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
-            # TODO: actually set like
-            messaging.send_like_confirmation(access_token, sender_id, payload, talks)
-
+            talk_id = int(payload.split(' ')[-1])
+            likes.revert_like(sender_id, talk_id)
+            messaging.send_schedule(access_token, sender_id)
         messaging.send_main_menu(access_token, sender_id)
     return 'Success.', 200
-
-
-messenger_profile.set_get_started_button(os.environ['ACCESS_TOKEN'], 'get started payload')
 
 
 if __name__ == '__main__':
