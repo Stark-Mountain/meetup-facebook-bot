@@ -5,7 +5,16 @@ gunicorn==19.7.1
 itsdangerous==0.24
 Jinja2==2.9.5
 MarkupSafe==1.0
+multidict==2.1.4
 psycopg2==2.7.1
+py==1.4.33
+pytest==3.0.7
+PyYAML==3.12
 requests==2.13.0
+six==1.10.0
 SQLAlchemy==1.1.9
+vcrpy==1.10.5
+vcrpy-unittest==0.1.6
 Werkzeug==0.12.1
+wrapt==1.10.10
+yarl==0.10.0
