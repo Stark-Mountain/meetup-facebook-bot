@@ -8,6 +8,7 @@ from app import app
 from app import models
 from app import database
 
+
 class SpeakerTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -75,12 +76,11 @@ class SpeakerTestCase(unittest.TestCase):
         speaker = models.Speaker(facebook_id=1, name='Jane Doe (Qweqwe, inc.)')
         database.session.add(speaker)
         database.session.commit()
-        
+
         duplicate_speaker = models.Speaker(facebook_id=1, name='John Doe (Qweqwe, inc.)')
         database.session.add(duplicate_speaker)
         with self.assertRaises(sqlalchemy.orm.exc.FlushError):
             database.session.commit()
-
 
 
 if __name__ == '__main__':
