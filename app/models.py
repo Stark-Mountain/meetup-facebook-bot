@@ -3,7 +3,7 @@ from app import database
 
 class Talk(database.Model):
     id = database.Column(database.Integer, primary_key=True, autoincrement=True)
-    title = database.Column(database.String(128), nullable=False)
+    title = database.Column(database.String(128), unique=True, nullable=False)
     description = database.Column(database.String(512))
     speaker_facebook_id = database.Column(database.BIGINT, database.ForeignKey('speaker.facebook_id'),
                                           nullable=False)
