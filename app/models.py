@@ -8,7 +8,7 @@ class Talk(database.Model):
     speaker_facebook_id = database.Column(database.BIGINT, database.ForeignKey('speaker.facebook_id'),
                                           nullable=False)
 
-    liked_by = database.relationship('Liker_Talk', backref='talk', lazy='dynamic')
+    likes = database.relationship('Liker_Talk', backref='talk', lazy='dynamic')
 
     def __repr__(self):
         return '<Talk %r>' % self.id
