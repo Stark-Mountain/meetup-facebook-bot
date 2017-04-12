@@ -11,13 +11,10 @@ from app import database
 class SpeakerTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.db_fd, self.db_name = tempfile.mkstemp()
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///%s' % self.db_name
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()
 
     def tearDown(self):
-        os.close(self.db_fd)
-        os.unlink(self.db_name)
         database.session.remove()
         database.drop_all()
 
