@@ -28,6 +28,23 @@ class SpeakerTestCase(unittest.TestCase):
         self.assertEqual(returned_speaker.facebook_id, speaker.facebook_id)
         self.assertEqual(returned_speaker.name, speaker.name)
 
+    def test_valid_speaker_with_talks(self):
+        speaker = models.Speaker(facebook_id=1, name='Jane Doe (Qweqwe, inc.)')
+        talk1 = models.Talk(title='Talk 1', speaker_facebook_id=speaker.facebook_id)
+        talk2 = models.Talk(title='Talk 2', speaker_facebook_id=speaker.facebook_id)
+        talk3 = models.Talk(title='Talk 3', speaker_facebook_id=speaker.facebook_id)
+        database.session.add(speaker)
+        database.session.add(talk1)
+        database.session.add(talk2)
+        database.session.add(talk3)
+        database.session.commit()
+
+        returned_speaker = models.Speaker.query.get(1)
+        returned_speaker_talks = returned_speaker.talks.all()
+        self.assertEqual(returned_speaker_talks[0].title, talk1.title)
+        self.assertEqual(returned_speaker_talks[1].title, talk2.title)
+        self.assertEqual(returned_speaker_talks[2].title, talk3.title)
+
     def test_valid_speaker_duplicate_name(self):
         speaker1 = models.Speaker(facebook_id=1, name='Jane Doe (Qweqwe, inc.)')
         speaker2 = models.Speaker(facebook_id=2, name='Jane Doe (Qweqwe, inc.)')
