@@ -39,3 +39,14 @@ class MessagingTestCase(unittest.TestCase):
         self.assertTrue('recipient_id' in response)
         self.assertTrue('message_id' in response)
         self.assertEqual(response['recipient_id'], self.user_id)
+
+    def test_send_more_talk_info(self):
+        speaker = models.Speaker(facebook_id=1, name='1')
+        talk = models.Talk(title='1', speaker=speaker)
+        database.session.add(talk)
+        database.session.commit()
+        with vcr.use_cassette('vcr_cassettes/send_more_talk_info.yaml'):
+            response = messaging.send_schedule(self.access_token, self.user_id)
+        self.assertTrue('recipient_id' in response)
+        self.assertTrue('message_id' in response)
+        self.assertEqual(response['recipient_id'], self.user_id)
