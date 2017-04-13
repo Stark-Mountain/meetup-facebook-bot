@@ -88,7 +88,7 @@ def send_schedule(access_token, user_id):
                 },
             'message': schedule_message_body
             }
-    send_message_to_facebook(access_token, schedule)
+    return send_message_to_facebook(access_token, schedule)
 
 
 def send_more_talk_info(access_token, user_id, talk_id):
