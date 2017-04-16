@@ -14,7 +14,7 @@ class MessagingTestCase(unittest.TestCase):
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()
-        self.access_token = os.environ['ACCESS_TOKEN']
+        self.access_token = '1'
         self.user_id = '474276666029691'
 
     def tearDown(self):

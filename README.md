@@ -11,7 +11,6 @@ FIXME: write the description
 7. Run `heroku run bash`. In here, setup the database with `python3 database_setup.py` and set "Get Started" button with ` python3 set_start_button.py`. (Do this only once)
 
 # How to run tests
-As a prerequisite, the access token for your app has to be in `ACCESS_TOKEN` environmental variable.
 After all dependencies are installed (`pip3 install -r requirements.txt`), run the following command from the root folder of the project:
 
 `$ python3 -m pytest tests --cov app --cov-report html`
