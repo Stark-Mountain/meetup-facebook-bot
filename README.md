@@ -12,5 +12,10 @@ FIXME: write the description
 
 # How to run tests
 As a prerequisite, the access token for your app has to be in `ACCESS_TOKEN` environmental variable.
-After all dependencies are installed (`pip3 install -r requirements.txt`), run the following command:
-`$ python -m pytest tests`.
+After all dependencies are installed (`pip3 install -r requirements.txt`), run the following command from the root folder of the project:
+
+`$ python3 -m pytest tests --cov app --cov-report html`
+
+View the generated html report with
+
+`open htmlcov/index.html`
