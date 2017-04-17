@@ -1,0 +1,35 @@
+interactions:
+- request:
+    body: 'null'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['4']
+      Content-Type: [application/json]
+      User-Agent: [python-requests/2.13.0]
+    method: GET
+    uri: https://graph.facebook.com/v2.6/me/messenger_profile?fields=get_started&access_token=1
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6tWSkksSVSyiq5WSk8tiS8uSSwqSU1RsqpWKkiszMlPTFGyUipJLS5RgHFra3Xw
+        KHV3DYkPDnEMCnF1iXcKDQnx94sPCHINDnZ1Uaqtja0FADCw9UtuAAAA
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['private, no-cache, no-store, must-revalidate']
+      Connection: [keep-alive]
+      Content-Encoding: [gzip]
+      Content-Length: ['99']
+      Content-Type: [application/json; charset=UTF-8]
+      Date: ['Mon, 17 Apr 2017 14:16:16 GMT']
+      ETag: ['"b2b2e188ec7cd7460bf7e80f8a7f7aa2916ea481"']
+      Expires: ['Sat, 01 Jan 2000 00:00:00 GMT']
+      Pragma: [no-cache]
+      Vary: [Accept-Encoding]
+      X-FB-Debug: [6AEaZ0TND6B7s0o85wblbtTedl17JMm5w84C3WHhjD7zGNXyCZ3QEKbKq12I3w7KOqkAlC+Lnw6zJlBFmeCpXw==]
+      facebook-api-version: [v2.8]
+      x-fb-rev: ['2961908']
+      x-fb-trace-id: [C/35g0I3Rhc]
+    status: {code: 200, message: OK}
+version: 1

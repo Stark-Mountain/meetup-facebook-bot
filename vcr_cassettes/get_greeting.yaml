@@ -1,0 +1,30 @@
+interactions:
+- request:
+    body: 'null'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['4']
+      Content-Type: [application/json]
+      User-Agent: [python-requests/2.13.0]
+    method: GET
+    uri: https://graph.facebook.com/v2.6/me/messenger_profile?fields=greeting&access_token=1
+  response:
+    body: {string: '{"data":[{"greeting":[{"locale":"default","text":"test greeting"}]}]}'}
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['private, no-cache, no-store, must-revalidate']
+      Connection: [keep-alive]
+      Content-Length: ['69']
+      Content-Type: [application/json; charset=UTF-8]
+      Date: ['Mon, 17 Apr 2017 14:31:10 GMT']
+      ETag: ['"d474d3bdfcc9b6d2f167118043b7eb653ae6257f"']
+      Expires: ['Sat, 01 Jan 2000 00:00:00 GMT']
+      Pragma: [no-cache]
+      X-FB-Debug: [Mcr5ROPBj+sZpiwvPXi+eehYwEjFNwE1Rwn7ooJVjXkW6Z/CkN2tXbhmNbxwsZNIBm7nmiIjW1//WPH7kFisdw==]
+      facebook-api-version: [v2.8]
+      x-fb-rev: ['2961908']
+      x-fb-trace-id: [HmxldgPBIRg]
+    status: {code: 200, message: OK}
+version: 1

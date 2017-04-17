@@ -1,0 +1,29 @@
+interactions:
+- request:
+    body: '{"fields": ["greeting"]}'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['24']
+      Content-Type: [application/json]
+      User-Agent: [python-requests/2.13.0]
+    method: DELETE
+    uri: https://graph.facebook.com/v2.6/me/messenger_profile?access_token=1
+  response:
+    body: {string: '{"result":"success"}'}
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      Cache-Control: ['private, no-cache, no-store, must-revalidate']
+      Connection: [keep-alive]
+      Content-Length: ['20']
+      Content-Type: [application/json; charset=UTF-8]
+      Date: ['Mon, 17 Apr 2017 14:31:10 GMT']
+      Expires: ['Sat, 01 Jan 2000 00:00:00 GMT']
+      Pragma: [no-cache]
+      X-FB-Debug: [I5xkNVOO5g0YTCseK02AK+2sBygAXT+qdHc/cjE1pSIwHJN+c3xcelHx33dR6nKB7gAVPD3yphqhY9ToNNya4A==]
+      facebook-api-version: [v2.8]
+      x-fb-rev: ['2961908']
+      x-fb-trace-id: [CaCLPM9gUzR]
+    status: {code: 200, message: OK}
+version: 1

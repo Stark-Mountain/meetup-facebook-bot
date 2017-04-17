@@ -64,7 +64,7 @@ def delete_field(access_token, field):
     return response
     
 
-def get_cli_args():
+def get_cli_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('field', type=str,
                         help='Either "get_started or greeting".')
@@ -74,11 +74,11 @@ def get_cli_args():
                         help='Set new value of the field to facebook')
     parser.add_argument('-d', '--delete', action='store_true',
                         help='Ask facebook to delete the current value of the field.')
-    return parser.parse_args()
+    return parser.parse_args(args)
                         
 
 if __name__ == '__main__':
-    args = get_cli_args()
+    args = get_cli_args(sys.argv[1:])
     access_token = os.environ['ACCESS_TOKEN']
     
     if args.field not in ALLOWED_FIELDS:
