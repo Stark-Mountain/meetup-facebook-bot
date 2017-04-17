@@ -42,6 +42,12 @@ class TalkTestCase(unittest.TestCase):
         self.assertEqual(returned_talk.speaker_facebook_id, talk.speaker_facebook_id)
         self.assertEqual(returned_talk.description, talk.description)
 
+    def test_valid_talk_repr(self):
+        talk = models.Talk(id=1, title='ti', description='desc', speaker_facebook_id=2)
+        expected_output = '<Talk id=1, title=\'ti\', description=\'desc\', '\
+                          'speaker_facebook_id=2>'
+        self.assertEqual(repr(talk), expected_output)
+
     def test_valid_talk_with_speaker_and_likes(self):
         speaker = models.Speaker(facebook_id=1, name='Jane Doe (Qweqwe, inc.)')
         talk = models.Talk(id=1, title='How to grow the grapes', 

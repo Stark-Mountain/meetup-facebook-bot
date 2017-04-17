@@ -55,6 +55,11 @@ class LikeTestCase(unittest.TestCase):
         self.assertEqual(returned_like2.liker_facebook_id, like2.liker_facebook_id)
         self.assertEqual(returned_like2.talk_id, like2.talk_id)
 
+    def test_valid_like_repr(self):
+        like = models.Liker_Talk(liker_facebook_id=123, talk_id=1)
+        expected_output = '<Liker_Talk liker_facebook_id=123, talk_id=1>'
+        self.assertEqual(repr(like), expected_output)
+
     def test_invalid_like_without_facebook_id(self):
         like = models.Liker_Talk(talk_id=123)
         database.session.add(like)

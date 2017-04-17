@@ -60,6 +60,11 @@ class SpeakerTestCase(unittest.TestCase):
         self.assertEqual(returned_speaker1.name, speaker1.name)
         self.assertEqual(returned_speaker2.name, speaker2.name)
 
+    def test_valid_speaker_repr(self):
+        speaker = models.Speaker(facebook_id=123, name='Jane Doe') 
+        expected_output = '<Speaker facebook_id=123, name=\'Jane Doe\'>'
+        self.assertEqual(repr(speaker), expected_output)
+
     def test_invalid_speaker_without_name(self):
         speaker = models.Speaker(facebook_id=1)
         database.session.add(speaker)
