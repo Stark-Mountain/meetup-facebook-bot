@@ -7,8 +7,8 @@ from app import models
 from app import database
 from app import likes
 
-class LikesTestCase(unittest.TestCase):
 
+class LikesTestCase(unittest.TestCase):
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()
@@ -60,7 +60,7 @@ class LikesTestCase(unittest.TestCase):
         returned_like = models.Liker_Talk.query.get((2, 1))
         self.assertEqual(returned_like.liker_facebook_id, 2)
         self.assertEqual(returned_like.talk_id, 1)
-        
+
     def test_set_like_invalid_no_talk(self):
         with self.assertRaises(ValueError):
             likes.set_like(user_id=2, talk_id=1)
@@ -82,7 +82,7 @@ class LikesTestCase(unittest.TestCase):
         likes.unset_like(user_id=2, talk_id=1)
         returned_like = models.Liker_Talk.query.get((2, 1))
         self.assertIsNone(returned_like)
-        
+
     def test_unset_like_invalid_no_talk(self):
         with self.assertRaises(ValueError):
             likes.unset_like(user_id=2, talk_id=1)

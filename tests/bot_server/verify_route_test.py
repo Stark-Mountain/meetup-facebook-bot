@@ -9,7 +9,6 @@ from app import models
 
 
 class VerifyRouteTestCase(unittest.TestCase):
-
     def setUp(self):
         self.app = app.test_client()
         os.environ['PAGE_ID'] = '1'

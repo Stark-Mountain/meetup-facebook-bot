@@ -7,7 +7,6 @@ from app.messenger import messenger_profile
 
 
 class MessengerProfileTestCase(unittest.TestCase):
-
     def setUp(self):
         self.access_token = '1'
 

@@ -12,7 +12,6 @@ from app.messenger import messaging
 
 
 class MessagingTestCase(unittest.TestCase):
-    
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()

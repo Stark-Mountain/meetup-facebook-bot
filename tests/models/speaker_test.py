@@ -10,7 +10,6 @@ from app import database
 
 
 class SpeakerTestCase(unittest.TestCase):
-
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()
@@ -61,7 +60,7 @@ class SpeakerTestCase(unittest.TestCase):
         self.assertEqual(returned_speaker2.name, speaker2.name)
 
     def test_valid_speaker_repr(self):
-        speaker = models.Speaker(facebook_id=123, name='Jane Doe') 
+        speaker = models.Speaker(facebook_id=123, name='Jane Doe')
         expected_output = '<Speaker facebook_id=123, name=\'Jane Doe\'>'
         self.assertEqual(repr(speaker), expected_output)
 

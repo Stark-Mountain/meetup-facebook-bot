@@ -10,7 +10,7 @@ from .messenger import message_processing
 
 @app.route('/')
 def verify():
-    params = {'PAGE_ID': os.environ['PAGE_ID'], 'APP_ID' : os.environ['APP_ID']}
+    params = {'PAGE_ID': os.environ['PAGE_ID'], 'APP_ID': os.environ['APP_ID']}
     if flask.request.args.get('hub.mode') != 'subscribe':
         return flask.render_template('index.html', **params)
     if not flask.request.args.get('hub.challenge'):

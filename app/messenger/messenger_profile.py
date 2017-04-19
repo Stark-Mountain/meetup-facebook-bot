@@ -5,7 +5,6 @@ import argparse
 
 import requests
 
-
 ALLOWED_FIELDS = ['get_started', 'greeting']
 
 
@@ -14,8 +13,8 @@ def send_messenger_profile_request(access_token, request_type, params=None, data
     if request_type not in allowed_request_types:
         raise ValueError('This request_type is not allowed: %s' % request_type)
     headers = {
-            'Content-Type': 'application/json'
-            }
+        'Content-Type': 'application/json'
+    }
     params = params or {}
     params['access_token'] = access_token
     url = 'https://graph.facebook.com/v2.6/me/messenger_profile'
@@ -27,22 +26,21 @@ def send_messenger_profile_request(access_token, request_type, params=None, data
 
 def set_get_started_button(access_token, payload):
     get_started_button = {
-            'get_started': {
-                'payload': payload,
-                },
-            }
+        'get_started': {
+            'payload': payload,
+        },
+    }
     response = send_messenger_profile_request(access_token, 'POST', data=get_started_button)
     return response
 
 
 def set_greeting(access_token, greeting_text):
     greeting = {
-            'greeting': [
-                {
-                'locale': 'default',
-                'text': greeting_text,
-                }
-            ]
+        'greeting': [
+            {'locale': 'default',
+             'text': greeting_text,
+             }
+        ]
     }
     response = send_messenger_profile_request(access_token, 'POST', data=greeting)
     return response
@@ -62,7 +60,7 @@ def delete_field(access_token, field):
     payload = {'fields': [field]}
     response = send_messenger_profile_request(access_token, 'DELETE', data=payload)
     return response
-    
+
 
 def get_cli_args(args):
     parser = argparse.ArgumentParser()
@@ -75,12 +73,12 @@ def get_cli_args(args):
     parser.add_argument('-d', '--delete', action='store_true',
                         help='Ask facebook to delete the current value of the field.')
     return parser.parse_args(args)
-                        
+
 
 if __name__ == '__main__':
     args = get_cli_args(sys.argv[1:])
     access_token = os.environ['ACCESS_TOKEN']
-    
+
     if args.field not in ALLOWED_FIELDS:
         sys.exit('Unknown field parameter\n')
 
