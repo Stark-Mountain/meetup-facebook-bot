@@ -1,5 +1,3 @@
-import os
-
 import flask
 
 from app import app
@@ -10,24 +8,23 @@ from .messenger import message_processing
 
 @app.route('/')
 def verify():
-    params = {'PAGE_ID': os.environ['PAGE_ID'], 'APP_ID' : os.environ['APP_ID']}
+    params = {'PAGE_ID': app.config['PAGE_ID'], 'APP_ID': app.config['APP_ID']}
     if flask.request.args.get('hub.mode') != 'subscribe':
         return flask.render_template('index.html', **params)
     if not flask.request.args.get('hub.challenge'):
         return flask.render_template('index.html', **params)
-    if flask.request.args.get('hub.verify_token') != os.environ['VERIFY_TOKEN']:
+    if flask.request.args.get('hub.verify_token') != app.config['VERIFY_TOKEN']:
         return 'Verification token mismatch', 403
     return flask.request.args['hub.challenge'], 200
 
 
 def flatten_list(nested):
-    return [item for sublist in nested for item in sublist] 
+    return [item for sublist in nested for item in sublist]
 
 
 @app.route('/', methods=['POST'])
 def webhook():
     facebook_request = flask.request.get_json()
-    access_token = os.environ['ACCESS_TOKEN']
     if facebook_request['object'] != 'page':
         return 'Object is not a page', 400
 
@@ -35,17 +32,17 @@ def webhook():
     for messaging_event in messaging_events:
         sender_id = messaging_event['sender']['id']
         if message_processing.is_schedule_button_pressed(messaging_event):
-            messaging.send_schedule(access_token, sender_id)
+            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id)
         elif message_processing.is_more_talk_info_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
             talk_id = int(payload.split(' ')[-1])
-            messaging.send_more_talk_info(access_token, sender_id, talk_id)
+            messaging.send_more_talk_info(app.config['ACCESS_TOKEN'], sender_id, talk_id)
         elif message_processing.is_like_talk_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
             talk_id = int(payload.split(' ')[-1])
             likes.revert_like(sender_id, talk_id)
-            messaging.send_schedule(access_token, sender_id)
-        messaging.send_main_menu(access_token, sender_id)
+            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id)
+        messaging.send_main_menu(app.config['ACCESS_TOKEN'], sender_id)
     return 'Success.', 200
 
 
