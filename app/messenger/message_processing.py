@@ -1,11 +1,3 @@
-def extract_all_messaging_events(entries):
-    messaging_events = []
-    for entry in entries:
-        for messaging_event in entry['messaging']:
-            messaging_events.append(messaging_event)
-    return messaging_events
-
-
 def is_quick_button_pressed(messaging_event):
     if 'message' not in messaging_event:
         return False
