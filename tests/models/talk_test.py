@@ -10,7 +10,6 @@ from app import database
 
 
 class TalkTestCase(unittest.TestCase):
-
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()
@@ -31,7 +30,7 @@ class TalkTestCase(unittest.TestCase):
         self.assertEqual(len(returned_talk.likes.all()), 0)
 
     def test_valid_talk_with_description(self):
-        talk = models.Talk(title='How to grow the grapes', 
+        talk = models.Talk(title='How to grow the grapes',
                            description='Once you master the world\'s six most important...',
                            speaker_facebook_id=1)
         database.session.add(talk)
@@ -44,13 +43,13 @@ class TalkTestCase(unittest.TestCase):
 
     def test_valid_talk_repr(self):
         talk = models.Talk(id=1, title='ti', description='desc', speaker_facebook_id=2)
-        expected_output = '<Talk id=1, title=\'ti\', description=\'desc\', '\
+        expected_output = '<Talk id=1, title=\'ti\', description=\'desc\', ' \
                           'speaker_facebook_id=2>'
         self.assertEqual(repr(talk), expected_output)
 
     def test_valid_talk_with_speaker_and_likes(self):
         speaker = models.Speaker(facebook_id=1, name='Jane Doe (Qweqwe, inc.)')
-        talk = models.Talk(id=1, title='How to grow the grapes', 
+        talk = models.Talk(id=1, title='How to grow the grapes',
                            speaker_facebook_id=speaker.facebook_id)
         database.session.add(speaker)
         database.session.add(talk)

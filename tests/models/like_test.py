@@ -9,7 +9,6 @@ from app import database
 
 
 class LikeTestCase(unittest.TestCase):
-
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         database.create_all()

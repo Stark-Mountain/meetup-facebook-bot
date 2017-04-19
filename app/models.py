@@ -2,7 +2,6 @@ from app import database
 
 
 class Talk(database.Model):
-
     id = database.Column(database.Integer, primary_key=True, autoincrement=True)
     title = database.Column(database.String(128), unique=True, nullable=False)
     description = database.Column(database.String(512))
@@ -17,7 +16,7 @@ class Talk(database.Model):
         title = repr(self.title)
         description = repr(self.description)
         speaker_facebook_id = repr(self.speaker_facebook_id)
-        raw_repr = '<Talk id={talk_id}, title={title}, description={description}, '\
+        raw_repr = '<Talk id={talk_id}, title={title}, description={description}, ' \
                    'speaker_facebook_id={speaker_facebook_id}>'
         formatted_repr = raw_repr.format(talk_id=talk_id, title=title, description=description,
                                          speaker_facebook_id=speaker_facebook_id)
@@ -25,7 +24,6 @@ class Talk(database.Model):
 
 
 class Speaker(database.Model):
-
     facebook_id = database.Column(database.BIGINT, primary_key=True)
     name = database.Column(database.String(128), nullable=False)
 
@@ -47,6 +45,6 @@ class Liker_Talk(database.Model):
     def __repr__(self):
         liker = repr(self.liker_facebook_id)
         talk = repr(self.talk_id)
-        raw_repr = '<Liker_Talk liker_facebook_id={liker}, talk_id={talk}>' 
+        raw_repr = '<Liker_Talk liker_facebook_id={liker}, talk_id={talk}>'
         formatted_repr = raw_repr.format(liker=liker, talk=talk)
         return formatted_repr

@@ -4,9 +4,9 @@ from app import models
 
 def is_like_set(user_id, talk_id):
     like = database.session.query(models.Liker_Talk).filter_by(
-            liker_facebook_id=user_id,
-            talk_id=talk_id
-            )
+        liker_facebook_id=user_id,
+        talk_id=talk_id
+    )
     return database.session.query(like.exists()).scalar()
 
 
@@ -32,9 +32,9 @@ def unset_like(user_id, talk_id):
     if not is_like_set(user_id, talk_id):
         raise ValueError('The like has not been set.')
     like = database.session.query(models.Liker_Talk).filter_by(
-            liker_facebook_id=user_id,
-            talk_id=talk_id
-            ).scalar()
+        liker_facebook_id=user_id,
+        talk_id=talk_id
+    ).scalar()
     database.session.delete(like)
     database.session.commit()
 
