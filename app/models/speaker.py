@@ -13,5 +13,3 @@ class Speaker(Base):
 
     def __repr__(self):
         return '<Speaker %r>' % self.facebook_id
-
-

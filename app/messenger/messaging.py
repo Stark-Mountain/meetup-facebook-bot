@@ -4,7 +4,7 @@ import requests
 
 
 def send_main_menu(access_token, user_id):
-    """ Makes use of Quick Replies: 
+    """ Makes use of Quick Replies:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
     """
     main_menu_message_body = {
@@ -38,7 +38,7 @@ def send_main_menu(access_token, user_id):
 
 
 def send_schedule(access_token, user_id, talks):
-    """ Makes use of Generic Template: 
+    """ Makes use of Generic Template:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
     """
     elements = []
