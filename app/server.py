@@ -24,8 +24,8 @@ def verify():
     return request.args['hub.challenge'], 200
 
 
-def flatten_list(nested):
-    return [item for sublist in nested for item in sublist]
+def extract_messaging_events(entries):
+    return [messaging_event for entry in entries for messaging_event in entry['messaging']]
 
 
 @app.route('/', methods=['POST'])
@@ -34,7 +34,7 @@ def webhook():
     if facebook_request['object'] != 'page':
         return 'Object is not a page', 400
 
-    messaging_events = flatten_list(facebook_request['entry'])
+    messaging_events = extract_messaging_events(facebook_request['entry'])
     for messaging_event in messaging_events:
         sender_id = messaging_event['sender']['id']
         if message_processing.is_schedule_button_pressed(messaging_event):
