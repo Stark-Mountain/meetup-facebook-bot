@@ -1,24 +1,19 @@
-import os
 import unittest
 
-import flask
-
-from app import app
-from app import database
-from app import models
+from app import server
 
 
 class VerifyRouteTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.app = app.test_client()
-        os.environ['PAGE_ID'] = '1'
-        os.environ['APP_ID'] = '1'
-        os.environ['VERIFY_TOKEN'] = '1'
+        server.app.config['PAGE_ID'] = '1'
+        server.app.config['APP_ID'] = '1'
+        server.app.config['VERIFY_TOKEN'] = '1'
+        self.app = server.app.test_client()
         self.challenge = 'asdasdasd'
         self.hub_mode = 'hub.mode=subscribe'
         self.hub_challenge = 'hub.challenge=%s' % self.challenge
-        self.hub_verify_token = 'hub.verify_token=%s' % os.environ['VERIFY_TOKEN']
+        self.hub_verify_token = 'hub.verify_token=%s' % server.app.config['VERIFY_TOKEN']
 
     def test_verify_without_params(self):
         response = self.app.get('/')

@@ -2,9 +2,6 @@ import json
 
 import requests
 
-from app import models
-from app import likes
-
 
 def send_main_menu(access_token, user_id):
     ''' Makes use of Quick Replies: 
@@ -41,16 +38,15 @@ def send_main_menu(access_token, user_id):
     return send_message_to_facebook(access_token, main_menu)
 
 
-def send_schedule(access_token, user_id):
+def send_schedule(access_token, user_id, talks):
     ''' Makes use of Generic Template: 
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
     '''
     elements = []
-    talks = models.Talk.query.all()
     for talk in talks:
-        number_of_likes = likes.count_likes(talk.id)
+        number_of_likes = talk.count_likes(talk.id)
         element_subtitle = 'Лайков: %d\nСпикер: %s' % (number_of_likes, talk.speaker.name)
-        if likes.is_like_set(user_id, talk.id):
+        if talk.is_liked_by(user_id):
             like_button_title = 'Убрать лайк'
         else:
             like_button_title = 'Поставить лайк'
@@ -91,11 +87,10 @@ def send_schedule(access_token, user_id):
     return send_message_to_facebook(access_token, schedule)
 
 
-def send_more_talk_info(access_token, user_id, talk_id):
+def send_more_talk_info(access_token, user_id, talk):
     ''' Send a simple Facebook message:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
     '''
-    talk = models.Talk.query.get(talk_id)
     title = talk.title
     speaker = talk.speaker.name
     description = talk.description or 'Нет описания.'

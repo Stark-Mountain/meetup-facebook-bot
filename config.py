@@ -1,7 +1,6 @@
 import os
 
 SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
-SQLALCHEMY_TRACK_MODIFICATIONS = False  # suppress deprecation warning
 
 ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
 PAGE_ID = os.environ['PAGE_ID']
