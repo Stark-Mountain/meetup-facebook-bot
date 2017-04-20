@@ -4,7 +4,6 @@ from app import server
 
 
 class VerifyRouteTestCase(unittest.TestCase):
-
     def setUp(self):
         server.app.config['PAGE_ID'] = '1'
         server.app.config['APP_ID'] = '1'
