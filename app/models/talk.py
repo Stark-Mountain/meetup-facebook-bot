@@ -16,7 +16,7 @@ class Talk(Base):
         nullable=False
     )
 
-    likes = relationship('Like', backref=__tablename__, lazy='dynamic')
+    likes = relationship('Like', backref='talk', lazy='dynamic')
 
     def is_liked_by(self, user_id, db_session):
         like = db_session.query(Like).filter_by(
