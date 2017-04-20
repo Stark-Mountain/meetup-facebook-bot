@@ -38,7 +38,8 @@ def webhook():
     for messaging_event in messaging_events:
         sender_id = messaging_event['sender']['id']
         if message_processing.is_schedule_button_pressed(messaging_event):
-            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id)
+            talks = db_session.query(Talk).all()
+            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id, talks)
         elif message_processing.is_more_talk_info_button_pressed(messaging_event):
             payload = messaging_event['postback']['payload']
             talk_id = int(payload.split(' ')[-1])
