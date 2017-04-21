@@ -2,7 +2,7 @@ import unittest
 
 import vcr
 
-from app.messenger import messenger_profile
+from meetup_facebook_bot.messenger import messenger_profile
 
 
 class MessengerProfileTestCase(unittest.TestCase):

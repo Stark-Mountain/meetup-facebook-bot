@@ -1,7 +1,7 @@
 import json
 
-from app import server
-from app.models import base, talk, speaker
+from meetup_facebook_bot import server
+from meetup_facebook_bot.models import base, talk, speaker
 
 
 base.Base.metadata.create_all(bind=server.engine)

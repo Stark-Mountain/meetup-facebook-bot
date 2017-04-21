@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import vcr
 
-from app.messenger import messaging
+from meetup_facebook_bot.messenger import messaging
 
 
 class MessagingTestCase(TestCase):
@@ -37,8 +37,14 @@ class MessagingTestCase(TestCase):
 
     def test_send_schedule(self):
         talks = self.generate_mockup_talks()
+        db_session = MagicMock()
         with vcr.use_cassette('vcr_cassettes/send_schedule.yaml'):
-            response = messaging.send_schedule(self.access_token, self.user_id, talks)
+            response = messaging.send_schedule(
+                self.access_token,
+                self.user_id,
+                talks,
+                db_session
+            )
         self.assertTrue('recipient_id' in response)
         self.assertTrue('message_id' in response)
         self.assertEqual(response['recipient_id'], self.user_id)

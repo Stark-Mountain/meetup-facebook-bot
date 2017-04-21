@@ -2,8 +2,8 @@ from flask import Flask, request, render_template
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.messenger import messaging, message_processing
-from app.models.talk import Talk
+from meetup_facebook_bot.messenger import messaging, message_processing
+from meetup_facebook_bot.models.talk import Talk
 
 app = Flask(__name__)
 app.config.from_object('config')

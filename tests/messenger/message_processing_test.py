@@ -1,6 +1,6 @@
 import unittest
 
-from app.messenger import message_processing
+from meetup_facebook_bot.messenger import message_processing
 
 
 class MessageProcessingTestCase(unittest.TestCase):

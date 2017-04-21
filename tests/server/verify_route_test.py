@@ -1,6 +1,6 @@
 import unittest
 
-from app import server
+from meetup_facebook_bot import server
 
 
 class VerifyRouteTestCase(unittest.TestCase):

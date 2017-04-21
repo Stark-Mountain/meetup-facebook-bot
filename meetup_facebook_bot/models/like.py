@@ -1,6 +1,6 @@
 from sqlalchemy import Column, BIGINT, Integer, ForeignKey
 
-from app.models.base import Base
+from meetup_facebook_bot.models.base import Base
 
 
 class Like(Base):

@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, BIGINT, ForeignKey
 from sqlalchemy.orm import relationship
 
-from app.models.base import Base
-from app.models.speaker import Speaker  # noqa
-from app.models.like import Like
+from meetup_facebook_bot.models.base import Base
+from meetup_facebook_bot.models.speaker import Speaker  # noqa
+from meetup_facebook_bot.models.like import Like
 
 
 class Talk(Base):
