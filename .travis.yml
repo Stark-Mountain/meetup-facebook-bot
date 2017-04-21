@@ -6,6 +6,6 @@ install:
   - pip3 install -r requirements.txt
   - pip3 install codecov
 script: 
-  - coverage run -m pytest tests --cov app --cov-report html
+  - coverage run -m pytest tests --cov app
 after_success:
   - codecov
