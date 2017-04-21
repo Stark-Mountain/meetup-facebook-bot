@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, BIGINT, ForeignKey
 from sqlalchemy.orm import relationship
 
 from app.models.base import Base
+from app.models.speaker import Speaker  # noqa
 from app.models.like import Like
 
 
@@ -16,7 +17,8 @@ class Talk(Base):
         nullable=False
     )
 
-    likes = relationship('Like', backref='talk', lazy='dynamic')
+    speaker = relationship('Speaker')
+    likes = relationship('Like')
 
     def is_liked_by(self, user_id, db_session):
         like = db_session.query(Like).filter_by(
