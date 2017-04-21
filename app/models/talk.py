@@ -25,33 +25,33 @@ class Talk(Base):
             user_facebook_id=user_id,
             talk_id=self.id
         )
-        return db_session.query(like.exists()).one()
+        return db_session.query(like.exists()).scalar()
 
     def count_likes(self, db_session):
         return db_session.query(Like).filter_by(talk_id=self.id).count()
 
     def set_like(self, user_id, db_session):
-        if self.is_liked_by(user_id):
+        if self.is_liked_by(user_id, db_session):
             raise ValueError('The like has already been set.')
-        like = Like(user_facebook_id=user_id, talk=self)
+        like = Like(user_facebook_id=user_id, talk_id=self.id)
         db_session.add(like)
         db_session.commit()
 
     def unset_like(self, user_id, db_session):
-        if not self.is_liked_by(user_id):
+        if not self.is_liked_by(user_id, db_session):
             raise ValueError('The like has not been set.')
         like = db_session.query(Like).filter_by(
             user_facebook_id=user_id,
             talk_id=self.id
-        ).one()
+        ).scalar()
         db_session.delete(like)
         db_session.commit()
 
     def revert_like(self, user_id, db_session):
-        if self.is_liked_by(user_id):
-            self.unset_like(user_id)
+        if self.is_liked_by(user_id, db_session):
+            self.unset_like(user_id, db_session)
         else:
-            self.set_like(user_id)
+            self.set_like(user_id, db_session)
 
     def __repr__(self):
         return '<Talk %r>' % self.id

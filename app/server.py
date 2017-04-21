@@ -55,7 +55,7 @@ def webhook():
                 continue
             talk.revert_like(sender_id, db_session)
             talks = db_session.query(Talk).all()
-            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id, talks)
+            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id, talks, db_session)
         messaging.send_main_menu(app.config['ACCESS_TOKEN'], sender_id)
     return 'Success.', 200
 
