@@ -1,57 +1,9 @@
 import unittest
 
-from app.messenger import message_processing
+from meetup_facebook_bot.messenger import message_processing
 
 
 class MessageProcessingTestCase(unittest.TestCase):
-    def test_extract_all_messaging_events_valid_input(self):
-        known_input = [
-            {
-                'id': 1,
-                'messaging': [
-                    {
-                        'messaging_event_id': 0
-                    },
-                    {
-                        'messaging_event_id': 1
-                    },
-                    {
-                        'messaging_event_id': 2
-                    }
-                ]
-            },
-            {
-                'id': 2,
-                'messaging': [
-                    {
-                        'messaging_event_id': 3
-                    },
-                    {
-                        'messaging_event_id': 4
-                    },
-                    {
-                        'messaging_event_id': 5
-                    }
-                ]
-            },
-            {
-                'id': 3,
-                'messaging': [
-                    {
-                        'messaging_event_id': 6
-                    },
-                    {
-                        'messaging_event_id': 7
-                    },
-                    {
-                        'messaging_event_id': 8
-                    }
-                ]
-            }
-        ]
-        expected_output = [{'messaging_event_id': event_id} for event_id in range(9)]
-        output = message_processing.extract_all_messaging_events(known_input)
-        self.assertEqual(output, expected_output)
 
     def test_is_quick_button_pressed_true(self):
         known_input = {

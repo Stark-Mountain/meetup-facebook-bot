@@ -2,12 +2,9 @@ import json
 
 import requests
 
-from app import models
-from app import likes
-
 
 def send_main_menu(access_token, user_id):
-    """ Makes use of Quick Replies: 
+    """ Makes use of Quick Replies:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
     """
     main_menu_message_body = {
@@ -40,16 +37,15 @@ def send_main_menu(access_token, user_id):
     return send_message_to_facebook(access_token, main_menu)
 
 
-def send_schedule(access_token, user_id):
-    """ Makes use of Generic Template: 
+def send_schedule(access_token, user_id, talks, db_session):
+    """ Makes use of Generic Template:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
     """
     elements = []
-    talks = models.Talk.query.all()
     for talk in talks:
-        number_of_likes = likes.count_likes(talk.id)
+        number_of_likes = talk.count_likes(db_session)
         element_subtitle = 'Лайков: %d\nСпикер: %s' % (number_of_likes, talk.speaker.name)
-        if likes.is_like_set(user_id, talk.id):
+        if talk.is_liked_by(user_id, db_session):
             like_button_title = 'Убрать лайк'
         else:
             like_button_title = 'Поставить лайк'
@@ -90,11 +86,10 @@ def send_schedule(access_token, user_id):
     return send_message_to_facebook(access_token, schedule)
 
 
-def send_more_talk_info(access_token, user_id, talk_id):
+def send_more_talk_info(access_token, user_id, talk):
     """ Send a simple Facebook message:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
     """
-    talk = models.Talk.query.get(talk_id)
     title = talk.title
     speaker = talk.speaker.name
     description = talk.description or 'Нет описания.'
