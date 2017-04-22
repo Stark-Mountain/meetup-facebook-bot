@@ -2,8 +2,7 @@ from flask import Flask, request, render_template
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from meetup_facebook_bot.messenger import messaging, message_processing
-from meetup_facebook_bot.models.talk import Talk
+from meetup_facebook_bot.messenger import message_validators, message_handlers
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -33,30 +32,30 @@ def webhook():
     facebook_request = request.get_json()
     if facebook_request['object'] != 'page':
         return 'Object is not a page', 400
-
     messaging_events = extract_messaging_events(facebook_request['entry'])
+    message_processors = [
+        (
+            message_validators.is_schedule_command, 
+            message_handlers.handle_schedule_command
+        ),
+        (
+            message_validators.is_talk_info_command,
+            message_handlers.handle_talk_info_command
+        ),
+        (
+            message_validators.is_talk_like_command,
+            message_handlers.handle_talk_like_command
+        ),
+        (
+            message_validators.has_sender_id,
+            message_handlers.handle_message_with_sender_id
+        )
+    ]
     for messaging_event in messaging_events:
-        sender_id = messaging_event['sender']['id']
-        if message_processing.is_schedule_button_pressed(messaging_event):
-            talks = db_session.query(Talk).all()
-            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id, talks, db_session)
-        elif message_processing.is_more_talk_info_button_pressed(messaging_event):
-            payload = messaging_event['postback']['payload']
-            talk_id = int(payload.split(' ')[-1])
-            talk = db_session.query(Talk).get(talk_id)
-            if not talk:
-                continue
-            messaging.send_more_talk_info(app.config['ACCESS_TOKEN'], sender_id, talk)
-        elif message_processing.is_like_talk_button_pressed(messaging_event):
-            payload = messaging_event['postback']['payload']
-            talk_id = int(payload.split(' ')[-1])
-            talk = db_session.query(Talk).get(talk_id)
-            if not talk:
-                continue
-            talk.revert_like(sender_id, db_session)
-            talks = db_session.query(Talk).all()
-            messaging.send_schedule(app.config['ACCESS_TOKEN'], sender_id, talks, db_session)
-        messaging.send_main_menu(app.config['ACCESS_TOKEN'], sender_id)
+        for message_validator, message_handler in message_processors:
+            if message_validator(messaging_event):
+                access_token = app.config['ACCESS_TOKEN']
+                message_handler(messaging_event, access_token, db_session)
     return 'Success.', 200
 
 

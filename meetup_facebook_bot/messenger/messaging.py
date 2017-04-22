@@ -86,7 +86,7 @@ def send_schedule(access_token, user_id, talks, db_session):
     return send_message_to_facebook(access_token, schedule)
 
 
-def send_more_talk_info(access_token, user_id, talk):
+def send_talk_info(access_token, user_id, talk):
     """ Send a simple Facebook message:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
     """
