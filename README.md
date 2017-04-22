@@ -1,9 +1,18 @@
 # meetup-facebook-bot
 
-[![travis build](https://img.shields.io/travis/Stark-Mountain/meetup-facebook-bot.svg?style=flat-square)](https://travis-ci.org/Stark-Mountain/meetup-facebook-bot)
-[![Coverage Status](https://coveralls.io/repos/github/Stark-Mountain/meetup-facebook-bot/badge.svg?branch=master)](https://coveralls.io/github/Stark-Mountain/meetup-facebook-bot?branch=master)
-[![Code Climate](https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot.png)](https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![travis build][build-badge]][build]
+[![Coverage Status][coverage-badge]][coverage]
+[![Code Climate][code-climate-badge]][code-climate]
+[![License: MIT][license-badge]][license]
+
+[build-badge]: https://img.shields.io/travis/Stark-Mountain/meetup-facebook-bot.svg?style=flat-square
+[build]: https://travis-ci.org/Stark-Mountain/meetup-facebook-bot
+[coverage-badge]: https://coveralls.io/repos/github/Stark-Mountain/meetup-facebook-bot/badge.svg?branch=master
+[coverage]: https://coveralls.io/github/Stark-Mountain/meetup-facebook-bot?branch=master
+[code-climate-badge]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot.png
+[code-climate]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot
+[license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg
+[license]: https://opensource.org/licenses/MIT
 
 
 FIXME: write the description
