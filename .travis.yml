@@ -5,6 +5,7 @@ python:
 branches:
   only:
     - master
+    - cc_badge
 notifications:
   email: false
 install: 
@@ -13,4 +14,4 @@ install:
 script: 
   - coverage run -m pytest tests --cov meetup_facebook_bot
 after_success:
-  - codecov
+  - coverall
