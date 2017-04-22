@@ -9,6 +9,6 @@ install:
   - pip3 install codecov
   - pip3 install coveralls
 script: 
-  - coverage run -m pytest tests --cov meetup_facebook_bot
+  - coverage run --sourse=meetup-facebook-bot -m pytest tests --cov meetup_facebook_bot
 after_success:
   - coveralls
