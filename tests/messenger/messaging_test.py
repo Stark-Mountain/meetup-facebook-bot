@@ -49,10 +49,10 @@ class MessagingTestCase(TestCase):
         self.assertTrue('message_id' in response)
         self.assertEqual(response['recipient_id'], self.user_id)
 
-    def test_send_more_talk_info(self):
+    def test_send_talk_info(self):
         talk = self.create_mockup_talk_with_speaker()
         with vcr.use_cassette('vcr_cassettes/send_more_talk_info.yaml'):
-            response = messaging.send_more_talk_info(self.access_token, self.user_id, talk)
+            response = messaging.send_talk_info(self.access_token, self.user_id, talk)
         self.assertTrue('recipient_id' in response)
         self.assertTrue('message_id' in response)
         self.assertEqual(response['recipient_id'], self.user_id)
