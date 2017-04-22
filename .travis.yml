@@ -6,9 +6,8 @@ notifications:
   email: false
 install: 
   - pip3 install -r requirements.txt
-  - pip3 install codecov
   - pip3 install coveralls
 script: 
-  - coverage run -m pytest tests --cov meetup_facebook_bot
+  - python3 -m pytest tests --cov meetup_facebook_bot
 after_success:
   - coveralls
