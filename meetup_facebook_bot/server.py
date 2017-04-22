@@ -51,10 +51,10 @@ def webhook():
             message_handlers.handle_message_with_sender_id
         )
     ]
+    access_token = app.config['ACCESS_TOKEN']
     for messaging_event in messaging_events:
         for message_validator, message_handler in message_processors:
             if message_validator(messaging_event):
-                access_token = app.config['ACCESS_TOKEN']
                 message_handler(messaging_event, access_token, db_session)
     return 'Success.', 200
 
