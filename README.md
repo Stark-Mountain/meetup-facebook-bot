@@ -1,7 +1,7 @@
 # meetup-facebook-bot
 
 [![travis build](https://img.shields.io/travis/Stark-Mountain/meetup-facebook-bot.svg?style=flat-square)](https://travis-ci.org/Stark-Mountain/meetup-facebook-bot)
-[![codecov coverage](https://img.shields.io/codecov/c/github/Stark-Mountain/meetup-facebook-bot.svg?style=flat-square)](https://codecov.io/github/Stark-Mountain/meetup-facebook-bot)
+[![Coverage Status](https://coveralls.io/repos/github/Stark-Mountain/meetup-facebook-bot/badge.svg?branch=master)](https://coveralls.io/github/Stark-Mountain/meetup-facebook-bot?branch=master)
 [![Code Climate](https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot.png)](https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
