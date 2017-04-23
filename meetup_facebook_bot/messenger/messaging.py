@@ -29,11 +29,7 @@ def send_main_menu(access_token, user_id):
             }
         ]
     }
-
-    main_menu = {
-        'message': main_menu_message_body,
-    }
-    return send_message_to_facebook(access_token, user_id, main_menu['message'])
+    return send_message_to_facebook(access_token, user_id, main_menu_message_body)
 
 
 def send_schedule(access_token, user_id, talks, db_session):
@@ -75,11 +71,7 @@ def send_schedule(access_token, user_id, talks, db_session):
             }
         }
     }
-
-    schedule = {
-        'message': schedule_message_body
-    }
-    return send_message_to_facebook(access_token, user_id, schedule['message'])
+    return send_message_to_facebook(access_token, user_id, schedule_message_body)
 
 
 def send_talk_info(access_token, user_id, talk):
