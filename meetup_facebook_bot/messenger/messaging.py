@@ -91,11 +91,9 @@ def send_talk_info(access_token, user_id, talk):
     description = talk.description or 'Нет описания.'
     more_info_text = '"%s"\n\n%s:\n%s' % (title, speaker, description)
     more_info = {
-        'message': {
-            'text': more_info_text
-        }
+        'text': more_info_text
     }
-    return send_message_to_facebook(access_token, user_id, more_info['message'])
+    return send_message_to_facebook(access_token, user_id, more_info)
 
 
 def send_message_to_facebook(access_token, user_id, message_data):
