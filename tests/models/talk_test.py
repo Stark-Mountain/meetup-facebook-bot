@@ -9,11 +9,6 @@ class TalkTestCase(TestCase):
         self.user_id = 1
         self.talk_id = 1
 
-
-    def test_is_liked_by(self):
-        pass
-
-
     @patch('meetup_facebook_bot.models.talk.Like')
     def test_set_like(self, like_class_mock):
         talk = Talk(id=self.talk_id)
@@ -32,3 +27,6 @@ class TalkTestCase(TestCase):
         self.db_session.query().filter_by().scalar = scalar_mock
         talk.unset_like(self.user_id, self.db_session)
         self.db_session.delete.assert_called_once_with(like_mock)
+
+    def test_revert_like(self):
+        pass
