@@ -1,3 +1,5 @@
+ # -*- coding: utf-8 -*-
+
 import json
 
 import requests
@@ -27,14 +29,7 @@ def send_main_menu(access_token, user_id):
             }
         ]
     }
-
-    main_menu = {
-        'recipient': {
-            'id': user_id,
-        },
-        'message': main_menu_message_body,
-    }
-    return send_message_to_facebook(access_token, main_menu)
+    return send_message_to_facebook(access_token, user_id, main_menu_message_body)
 
 
 def send_schedule(access_token, user_id, talks, db_session):
@@ -76,14 +71,7 @@ def send_schedule(access_token, user_id, talks, db_session):
             }
         }
     }
-
-    schedule = {
-        'recipient': {
-            'id': user_id
-        },
-        'message': schedule_message_body
-    }
-    return send_message_to_facebook(access_token, schedule)
+    return send_message_to_facebook(access_token, user_id, schedule_message_body)
 
 
 def send_talk_info(access_token, user_id, talk):
@@ -95,25 +83,26 @@ def send_talk_info(access_token, user_id, talk):
     description = talk.description or 'Нет описания.'
     more_info_text = '"%s"\n\n%s:\n%s' % (title, speaker, description)
     more_info = {
-        'recipient': {
-            'id': user_id
-        },
-        'message': {
-            'text': more_info_text
-        }
+        'text': more_info_text
     }
-    return send_message_to_facebook(access_token, more_info)
+    return send_message_to_facebook(access_token, user_id, more_info)
 
 
-def send_message_to_facebook(access_token, message_data):
+def send_message_to_facebook(access_token, user_id, message_data):
     headers = {
         'Content-Type': 'application/json',
     }
     params = {
         'access_token': access_token,
     }
+    payload = {
+        'recipient': {
+            'id': user_id,
+        },
+        'message': message_data,
+    }
     url = 'https://graph.facebook.com/v2.6/me/messages'
     response = requests.post(url, headers=headers, params=params,
-                             data=json.dumps(message_data))
+                             data=json.dumps(payload))
     response.raise_for_status()
     return response.json()
