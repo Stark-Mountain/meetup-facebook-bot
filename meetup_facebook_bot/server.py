@@ -12,15 +12,17 @@ db_session = Session()
 
 
 def is_facebook_challenge_request(request):
-    if (request.args.get('hub.mode') != 'subscribe') or \
-            (not request.args.get('hub.challenge')):
-        return True
+    if request.args.get('hub.mode') != 'subscribe':
+        return False
+    if not request.args.get('hub.challenge'):
+        return False
+    return True
 
 
 @app.route('/')
 def verify():
     params = {'PAGE_ID': app.config['PAGE_ID'], 'APP_ID': app.config['APP_ID']}
-    if is_facebook_challenge_request(request):
+    if not is_facebook_challenge_request(request):
         return render_template('index.html', **params)
     if request.args.get('hub.verify_token') != app.config['VERIFY_TOKEN']:
         return 'Verification token mismatch', 403
