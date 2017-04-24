@@ -11,12 +11,16 @@ Session = sessionmaker(bind=engine)
 db_session = Session()
 
 
+def is_facebook_challenge_request(request):
+    if (request.args.get('hub.mode') != 'subscribe') or \
+            (not request.args.get('hub.challenge')):
+        return True
+
+
 @app.route('/')
 def verify():
     params = {'PAGE_ID': app.config['PAGE_ID'], 'APP_ID': app.config['APP_ID']}
-    if request.args.get('hub.mode') != 'subscribe':
-        return render_template('index.html', **params)
-    if not request.args.get('hub.challenge'):
+    if is_facebook_challenge_request(request):
         return render_template('index.html', **params)
     if request.args.get('hub.verify_token') != app.config['VERIFY_TOKEN']:
         return 'Verification token mismatch', 403
@@ -35,7 +39,7 @@ def webhook():
     messaging_events = extract_messaging_events(facebook_request['entry'])
     message_processors = [
         (
-            message_validators.is_schedule_command, 
+            message_validators.is_schedule_command,
             message_handlers.handle_schedule_command
         ),
         (
