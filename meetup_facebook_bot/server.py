@@ -41,16 +41,16 @@ def webhook():
     messaging_events = extract_messaging_events(facebook_request['entry'])
     message_processors = [
         (
-            message_validators.is_schedule_command,
-            message_handlers.handle_schedule_command
-        ),
-        (
             message_validators.is_talk_info_command,
             message_handlers.handle_talk_info_command
         ),
         (
-            message_validators.is_talk_like_command,
-            message_handlers.handle_talk_like_command
+            message_validators.is_talk_rate_command,
+            message_handlers.handle_talk_rate_command
+        ),
+        (
+            message_validators.is_talk_ask_command,
+            message_handlers.handle_talk_ask_command
         ),
         (
             message_validators.has_sender_id,
