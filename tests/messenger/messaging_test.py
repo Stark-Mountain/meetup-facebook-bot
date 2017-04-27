@@ -28,13 +28,6 @@ class MessagingTestCase(TestCase):
         self.access_token = '1'
         self.user_id = '474276666029691'
 
-    def test_send_main_menu(self):
-        with vcr.use_cassette('vcr_cassettes/send_main_menu.yaml'):
-            response = messaging.send_main_menu(self.access_token, self.user_id)
-        self.assertTrue('recipient_id' in response)
-        self.assertTrue('message_id' in response)
-        self.assertEqual(response['recipient_id'], self.user_id)
-
     def test_send_schedule(self):
         talks = self.generate_mockup_talks()
         db_session = MagicMock()
