@@ -35,7 +35,7 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
     if talk.is_liked_by(user_id, db_session):
         like_text_message = 'Поставил лайк'
     else:
-        like_text_message = 'Убрал лайк лайк'
+        like_text_message = 'Убрал лайк'
     like_message_body = {
         "message": {
             "text": like_text_message
