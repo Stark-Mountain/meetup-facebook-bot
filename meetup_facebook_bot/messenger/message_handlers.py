@@ -27,7 +27,7 @@ def handle_talk_rate_command(messaging_event, access_token, db_session):
 
 
 def handle_like_confirmation_command(messaging_event, access_token, db_session):
-    pass
+    raise NotImplemented
 
 
 def handle_talk_ask_command(messaging_event, access_token, db_session):
