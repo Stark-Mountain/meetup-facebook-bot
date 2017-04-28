@@ -23,7 +23,7 @@ def handle_talk_rate_command(messaging_event, access_token, db_session):
     except IndexError:
         return
     talk.revert_like(sender_id, db_session)
-    return messaging.send_schedule(access_token, sender_id, talk, db_session)
+    return messaging.send_schedule(access_token, sender_id, talks, db_session)
 
 
 def handle_like_confirmation_command(messaging_event, access_token, db_session):
