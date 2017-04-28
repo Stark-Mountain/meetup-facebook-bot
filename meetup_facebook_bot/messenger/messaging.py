@@ -31,6 +31,19 @@ def send_rate_menu(access_token, user_id, talk, db_session):
     return send_message_to_facebook(access_token, user_id, rate_menu_message_body)
 
 
+def send_like_confirmation(access_token, user_id, talk, db_session):
+    if talk.is_liked_by(user_id, db_session):
+        like_text_message = 'Поставил лайк'
+    else:
+        like_text_message = 'Убрал лайк лайк'
+    like_message_body = {
+        "message": {
+            "text": like_text_message
+        }
+    }
+    return send_message_to_facebook(access_token, user_id, like_message_body)
+
+
 def send_schedule(access_token, user_id, talks, db_session):
     """ Makes use of Generic Template:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
