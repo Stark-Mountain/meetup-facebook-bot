@@ -14,7 +14,7 @@ def send_rate_menu(access_token, user_id, talk, db_session):
     else:
         rate_button_title = 'Поставить лайк'
     rate_menu_message_body = {
-        'text': '',
+        'text': 'Как будем оценивать?',
         'quick_replies': [
             {
                 'content_type': 'text',
