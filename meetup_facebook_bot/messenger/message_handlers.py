@@ -22,16 +22,20 @@ def handle_talk_rate_command(messaging_event, access_token, db_session):
         talk = talks[talk_id - 1]
     except IndexError:
         return
+    return messaging.send_rate_menu(access_token, sender_id, talk, db_session)
+
+
+def handle_talk_like_command(messaging_event, access_token, db_session):
+    sender_id = messaging_event['sender']['id']
+    payload = messaging_event['postback']['payload']
+    talks = db_session.query(Talk).all()
+    talk_id = int(payload.split(' ')[-1])
+    try:
+        talk = talks[talk_id - 1]
+    except IndexError:
+        return
     talk.revert_like(sender_id, db_session)
-    return messaging.send_schedule(access_token, sender_id, talks, db_session)
-
-
-def handle_like_confirmation_command(messaging_event, access_token, db_session):
-    raise NotImplemented
-
-
-def handle_talk_ask_command(messaging_event, access_token, db_session):
-    return handle_message_with_sender_id(messaging_event, access_token, db_session)
+    return messaging.send_like_confirmation(access_token, sender_id, talks, db_session)
 
 
 def handle_message_with_sender_id(messaging_event, access_token, db_session):
