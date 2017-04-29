@@ -7,7 +7,6 @@ from meetup_facebook_bot.messenger import messaging
 
 
 class MessagingTestCase(TestCase):
-
     def generate_mockup_talks(self):
         talk_mocks = []
         for talk_id in range(1, 6):
@@ -17,13 +16,13 @@ class MessagingTestCase(TestCase):
             talk_mock.is_liked_by = MagicMock(return_value=False)
             talk_mocks.append(talk_mock)
         return talk_mocks
-    
+
     def create_mockup_talk_with_speaker(self):
         speaker_mock = MagicMock()
         speaker_mock.name = '1'
         talk_mock = MagicMock(title='1', speaker=speaker_mock, description=None)
         return talk_mock
-        
+
     def setUp(self):
         self.access_token = '1'
         self.user_id = '474276666029691'

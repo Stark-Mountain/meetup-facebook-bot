@@ -62,7 +62,6 @@ class WebhookRouteTestCase(TestCase):
             server.db_session
         )
 
-
     @patch('meetup_facebook_bot.messenger.message_handlers.messaging.send_talk_info')
     def test_more_talk_info_command_handling(self, send_talk_info_mock):
         talk_mock = MagicMock()
@@ -74,7 +73,6 @@ class WebhookRouteTestCase(TestCase):
             self.sender_id,
             talk_mock
         )
-
 
     def test_talk_like_command_handling(self):
         liked_talk_mock = MagicMock(talk_id=1)
