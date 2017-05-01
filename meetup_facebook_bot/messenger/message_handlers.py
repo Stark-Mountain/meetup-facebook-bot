@@ -27,7 +27,7 @@ def handle_talk_like_command(messaging_event, access_token, db_session):
     talk_id = int(payload.split(' ')[-1])
     talk = db_session.query(Talk).get(talk_id)
     talk.revert_like(sender_id, db_session)
-    return messaging.send_like_confirmation(access_token, sender_id, talks, db_session)
+    return messaging.send_like_confirmation(access_token, sender_id, talk, db_session)
 
 
 def handle_message_with_sender_id(messaging_event, access_token, db_session):
