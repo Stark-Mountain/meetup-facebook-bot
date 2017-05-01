@@ -74,14 +74,14 @@ class WebhookRouteTestCase(TestCase):
             talk_mock
         )
 
-    def test_talk_like_command_handling(self):
-        liked_talk_mock = MagicMock(talk_id=1)
-        liked_talk_mock.revert_like = MagicMock()
-        talks_mock = [liked_talk_mock, MagicMock(talk_id=2)]
-        server.db_session.query().all = MagicMock(return_value=talks_mock)
+    @patch('meetup_facebook_bot.messenger.message_handlers.Talk')
+    def test_talk_like_command_handling(self, talk_class_mock):
+        talk_mock = MagicMock(talk_id=1)
+        talk_mock.revert_like = MagicMock()
+        server.db_session.query(talk_class_mock).get = MagicMock(return_value=talk_mock)
         known_input = self.generate_postback('like talk 1')
         self.app.post('/', data=json.dumps(known_input), content_type='application/json')
-        liked_talk_mock.revert_like.assert_called_once_with(
+        talk_mock.revert_like.assert_called_once_with(
             self.sender_id,
             server.db_session
         )
