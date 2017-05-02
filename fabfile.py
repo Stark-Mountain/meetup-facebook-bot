@@ -4,10 +4,11 @@ from io import StringIO
 from fabric.api import settings, local, abort, run, cd, env, prefix, sudo, prompt, put
 from fabric.contrib.console import confirm 
 
-env.sources_directory = '~/meetup-facebook-bot'
-env.socket_path = '%s/app.socket' % env.sources_directory
+env.sources_directory = '/var/www/meetup-facebook-bot'
+env.socket_path = '/tmp/meetup-facebook-bot.socket' % env.sources_directory
 env.venv_folder = 'venv'
 env.venv_activate_command = 'source %s/%s/bin/activate' % (env.sources_directory, env.venv_folder)
+env.app_ini_filepath = '%s/meetup-facebook-bot.ini' % env.sources_directory
 
 
 #TODO: add prepare_deploy task
@@ -22,12 +23,12 @@ def install_python():
 
 def get_sources():
     repository_url = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'  
-    run('git clone %s %s' % (repository_url, env.sources_directory))
+    sudo('git clone %s %s' % (repository_url, env.sources_directory))
 
 
 def setup_venv():
     with cd(env.sources_directory):
-        run('python3 -m venv %s' % env.venv_folder)
+        sudo('python3 -m venv %s' % env.venv_folder)
 
 
 def install_modules():
@@ -96,7 +97,7 @@ die-on-term = true'''.format(
                 socket_path=env.socket_path
             )
         ), 
-        '{source_path}/uwsgi.ini'.format(source_path=env.sources_directory),
+        env.app_ini_filepath,
         use_sudo=True
     )
 
