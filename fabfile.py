@@ -5,10 +5,12 @@ from fabric.api import settings, local, abort, run, cd, env, prefix, sudo, promp
 from fabric.contrib.console import confirm 
 
 env.sources_directory = '/var/www/meetup-facebook-bot'
-env.socket_path = '/tmp/meetup-facebook-bot.socket' % env.sources_directory
+env.socket_path = '/tmp/meetup-facebook-bot.socket'
 env.venv_folder = 'venv'
-env.venv_activate_command = 'source %s/%s/bin/activate' % (env.sources_directory, env.venv_folder)
+env.venv_directory = '%s/%s' % (env.sources_directory, env.venv_folder)
+env.venv_activate_command = 'source %s/bin/activate' % env.venv_directory
 env.app_ini_filepath = '%s/meetup-facebook-bot.ini' % env.sources_directory
+env.uwsgi_service_file_name = 'meetup_facebook_bot.service'
 
 
 #TODO: add prepare_deploy task
@@ -102,16 +104,40 @@ die-on-term = true'''.format(
     )
 
 
-def create_service_file():
-    pass
+def create_uwsgi_service_file():
+    put(StringIO(
+u'''[Unit]
+Description=uWSGI instance to serve meetup_facebook_bot
+After=network.target
+
+[Service]
+User={user}
+Group=www-data
+WorkingDirectory={work_dir}
+Environment="PATH={env_bin_dir}"
+ExecStart={uwsgi_path} --ini {app_ini_path}
+
+[Install]
+WantedBy=multi-user.target'''.format(
+                user=env.user,
+                work_dir=env.sources_directory,
+                env_bin_dir='%s/bin' % env.venv_directory,
+                uwsgi_path = '%s/bin/uwsgi' % env.venv_directory,
+                app_ini_path=env.app_ini_filepath
+            )
+        ),
+        '/etc/systemd/system/%s' % env.uwsgi_service_file_name,
+        use_sudo=True
+    )
 
 
 def create_nginx_config():
     pass
 
 
-def start_service():
-    pass
+def start_uwsgi_service():
+    sudo('systemctl daemon-reload')
+    sudo('systemctl start %s' % env.uwsgi_service_file_name)
 
 
 def start_nginx():
