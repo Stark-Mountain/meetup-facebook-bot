@@ -1,8 +1,8 @@
 from getpass import getpass
 from io import StringIO
 
-from fabric.api import settings, local, abort, run, cd, env,
-                       prefix, sudo, prompt, put, shell_env
+from fabric.api import settings, local, abort, run, cd, env,\
+    prefix, sudo, prompt, put, shell_env
 from fabric.contrib.console import confirm 
 
 # these can have arbitrary values
