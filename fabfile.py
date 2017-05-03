@@ -295,14 +295,17 @@ def test():
     if result.failed and not confirm("Tests failed. Continue anyway?"):
         abort("Aborting at user request.")
 
+
 def commit():
     local("git add -p && git commit")
 
-def push():
-    local("git push")
+
+def push(branch):
+    local("git push origin %s" % branch)
+
 
 @task
-def prepare_deploy():
+def prepare_deploy(branch):
     test()
     commit()
-    push()
+    push(branch)
