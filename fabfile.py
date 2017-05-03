@@ -72,8 +72,9 @@ def install_database():
 def setup_database():
     db_username = env.user
     db_name = env.user
-    run('sudo -u postgres createuser %s -s' % db_username)
-    run('sudo -u postgres createdb %s' % db_name)
+    with settings(warn_only=True):
+        run('sudo -u postgres createuser %s -s' % db_username)
+        run('sudo -u postgres createdb %s' % db_name)
     global DATABASE_URL
     DATABASE_URL = 'postgresql://%s@/%s' % (db_username, db_name)
 
