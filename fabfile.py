@@ -2,7 +2,7 @@ from getpass import getpass
 from io import StringIO
 
 from fabric.api import settings, local, abort, run, cd, env,\
-    prefix, sudo, prompt, put, shell_env
+    prefix, sudo, prompt, put, shell_env, task
 from fabric.contrib.console import confirm 
 
 # these can have arbitrary values
@@ -271,6 +271,7 @@ def run_setup_scripts():
         run('python3 %s/set_start_button.py' % env.sources_directory)
 
 
+@task
 def prepare_machine():
     prepare_sources()
     install_nginx()
@@ -286,3 +287,22 @@ def prepare_machine():
     start_uwsgi()
     start_nginx()
     run_setup_scripts()
+
+
+def test():
+    with settings(warn_only=True):
+        result = local('python3 -m pytest tests', capture=True)
+    if result.failed and not confirm("Tests failed. Continue anyway?"):
+        abort("Aborting at user request.")
+
+def commit():
+    local("git add -p && git commit")
+
+def push():
+    local("git push")
+
+@task
+def prepare_deploy():
+    test()
+    commit()
+    push()
