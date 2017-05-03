@@ -4,19 +4,24 @@ from io import StringIO
 from fabric.api import settings, local, abort, run, cd, env, prefix, sudo, prompt, put
 from fabric.contrib.console import confirm 
 
+# these can have arbitrary values
 env.sources_directory = '/var/www/meetup-facebook-bot'
 env.socket_path = '/tmp/meetup-facebook-bot.socket'
-env.venv_folder = 'venv'
-env.venv_directory = '%s/%s' % (env.sources_directory, env.venv_folder)
-env.venv_activate_command = 'source %s/bin/activate' % env.venv_directory
 env.app_ini_filepath = '%s/meetup-facebook-bot.ini' % env.sources_directory
 env.uwsgi_service_file_name = 'meetup_facebook_bot.service'
 env.ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
 
+# these are are not arbitrary
+env.venv_folder = 'venv'
+env.venv_directory = '%s/%s' % (env.sources_directory, env.venv_folder)
+env.venv_activate_command = 'source %s/bin/activate' % env.venv_directory
+
+# these will be set later
+DATABASE_URL = None
+ACCESS_TOKEN = None
 
 #TODO: add prepare_deploy task
 #TODO: add deploy task
-#TODO: implement the rest
 
 
 def install_python():
@@ -64,7 +69,8 @@ def setup_database():
     db_name = env.user
     run('sudo -u postgres createuser %s -s' % db_username)
     run('sudo -u postgres createdb %s' % db_name)
-    env.database_url = 'postgresql://%s@/%s' % (db_username, db_name)
+    global DATABASE_URL
+    DATABASE_URL = 'postgresql://%s@/%s' % (db_username, db_name)
 
 def setup_firewall():
     sudo('ufw allow "Nginx Full"')
@@ -73,8 +79,11 @@ def setup_firewall():
 
 
 def create_ini_file():
-    database_url = getattr(env, 'database_url', prompt('Enter DATABASE_URL:'))
-    access_token = getpass('Enter ACCESS_TOKEN:')
+    global DATABASE_URL
+    if not DATABASE_URL:
+        DATABASE_URL = prompt('Enter DATABASE_URL:')
+    global ACCESS_TOKEN
+    ACCESS_TOKEN = getpass('Enter ACCESS_TOKEN:')
     page_id = prompt('Enter PAGE_ID:')
     app_id = prompt('Enter APP_ID:')
     verify_token = getpass('Enter VERIFY_TOKEN:')
@@ -93,8 +102,8 @@ socket = {socket_path}
 chmod-socket = 660
 vacuum = true
 die-on-term = true'''.format(
-                db_url=database_url,
-                access_token=access_token,
+                db_url=DATABASE_URL,
+                access_token=ACCESS_TOKEN,
                 page_id=page_id,
                 app_id=app_id,
                 verify_token=verify_token,
@@ -189,9 +198,8 @@ def configure_letsencrypt():
 
 def create_nginx_config():
     configure_letsencrypt()
-    if not hasattr(env, 'domain_name'):
-        env.domain_name = prompt('Enter your domain name:', default='metup_facebook_bot')
-    nginx_config_path = '/etc/nginx/sites-available/%s' % env.domain_name
+    domain_name = prompt('Enter your domain name:', default='metup_facebook_bot')
+    nginx_config_path = '/etc/nginx/sites-available/%s' % domain_name
     put(StringIO(
         u'''server {{
     listen 80;
@@ -218,7 +226,7 @@ server {{
     }}
 }}'''.format(
                 source_dir=env.sources_directory,
-                domain=env.domain_name,
+                domain=domain_name,
                 ssl_params_path=env.ssl_params_path,
                 fullchain_path='%s/fullchain.pem' % env.letsnecrypt_folder,
                 privkey_path='%s/privkey.pem' % env.letsnecrypt_folder,
@@ -228,7 +236,7 @@ server {{
         nginx_config_path,
         use_sudo=True
     )
-    nginx_config_alias = '/etc/nginx/sites-enabled/%s' % env.domain_name
+    nginx_config_alias = '/etc/nginx/sites-enabled/%s' % domain_name
     sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
 
 
