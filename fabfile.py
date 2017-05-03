@@ -1,7 +1,8 @@
 from getpass import getpass
 from io import StringIO
 
-from fabric.api import settings, local, abort, run, cd, env, prefix, sudo, prompt, put, shell_env
+from fabric.api import settings, local, abort, run, cd, env,
+                       prefix, sudo, prompt, put, shell_env
 from fabric.contrib.console import confirm 
 
 # these can have arbitrary values
@@ -256,10 +257,18 @@ def start_nginx():
 
 
 def run_setup_scripts():
-    sudo('python3 %s/database_setup.py' % env.sources_directory)
     global ACCESS_TOKEN
-    with shell_env(ACCESS_TOKEN=ACCESS_TOKEN):
-        sudo('python3 %s/set_start_button.py')
+    global DATABASE_URL
+    environ_params = {
+        'ACCESS_TOKEN': ACCESS_TOKEN,
+        'DATABASE_URL': DATABASE_URL,
+        'PAGE_ID': '1',  # this and the following are needed just to avoid syntax errors
+        'APP_ID': '1',
+        'VERIFY_TOKEN': '1',
+    }
+    with cd(env.sources_directory), shell_env(**environ_params), prefix(env.venv_activate_command):
+        run('python3 %s/database_setup.py' % env.sources_directory)
+        run('python3 %s/set_start_button.py' % env.sources_directory)
 
 
 def prepare_machine():
