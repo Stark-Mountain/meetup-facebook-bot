@@ -31,6 +31,11 @@ def install_python():
 
 def get_sources():
     repository_url = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'  
+    with settings(warn_only=True):
+        source_existence_check = run('test -f %s' % env.sources_directory)
+    if source_existence_check.succeeded:
+        print('The sources alrady exist. We\'ll remove them before cloning.')
+        sudo('rm -rf %s' % env.sources_directory)
     sudo('git clone %s %s' % (repository_url, env.sources_directory))
 
 
