@@ -3,7 +3,6 @@ import json
 from meetup_facebook_bot import server
 from meetup_facebook_bot.models import base, talk, speaker
 
-
 base.Base.metadata.create_all(bind=server.engine)
 session = server.Session()
 
