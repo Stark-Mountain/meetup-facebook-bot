@@ -21,9 +21,6 @@ env.venv_activate_command = 'source %s/bin/activate' % env.venv_directory
 DATABASE_URL = None
 ACCESS_TOKEN = None
 
-#TODO: add prepare_deploy task
-#TODO: add deploy task
-
 
 def install_python():
     sudo('apt-get update')
@@ -53,7 +50,6 @@ def install_modules():
 
 
 def prepare_sources():
-    install_python()
     get_sources()
     setup_venv()
     install_modules()
@@ -249,7 +245,7 @@ server {{
 
 def start_uwsgi():
     sudo('systemctl daemon-reload')
-    sudo('systemctl start %s' % env.uwsgi_service_file_name)
+    sudo('systemctl restart %s' % env.uwsgi_service_file_name)
 
 
 def start_nginx():
@@ -273,6 +269,7 @@ def run_setup_scripts():
 
 @task
 def prepare_machine():
+    install_python()
     prepare_sources()
     install_nginx()
     install_database()
@@ -292,17 +289,17 @@ def prepare_machine():
 def test():
     with settings(warn_only=True):
         result = local('python3 -m pytest tests', capture=True)
-    if result.failed and not confirm("Tests failed. Continue anyway?"):
-        abort("Aborting at user request.")
+    if result.failed and not confirm('Tests failed. Continue anyway?'):
+        abort('Aborting at user request.')
 
 
 def commit():
     with settings(warn_only=True):
-        local("git add -p && git commit")
+        local('git add -p && git commit')
 
 
 def push(branch):
-    local("git push origin %s" % branch)
+    local('git push origin %s' % branch)
 
 
 @task
@@ -310,3 +307,16 @@ def prepare_deploy(branch):
     test()
     commit()
     push(branch)
+
+
+@task
+def deploy(branch='master'):
+    with settings(warn_only=True):
+        if run('test -d %s' % env.sources_directory).failed:
+            abort('run prepare_machine first')
+    with cd(env.sources_directory):
+        sudo('git checkout %s' % branch)
+        sudo('git pull origin %s' % branch)
+        install_modules()
+        start_uwsgi()
+        start_nginx()
