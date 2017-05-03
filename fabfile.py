@@ -133,11 +133,6 @@ WantedBy=multi-user.target'''.format(
     )
 
 
-def start_uwsgi_service():
-    sudo('systemctl daemon-reload')
-    sudo('systemctl start %s' % env.uwsgi_service_file_name)
-
-
 def create_ssl_params_file():
     dhparam_path = '/etc/ssl/certs/dhparam.pem'
     with settings(warn_only=True):
@@ -176,6 +171,7 @@ ssl_dhparam {dhparam_path};'''.format(
 def remove_trailing_slash_if_present(path):
     return path[:-1] if path[-1] == '/' else path
 
+
 def configure_letsencrypt():
     sudo("mkdir -p /tmp/git")
     sudo("rm -rf /tmp/git/letsencrypt")
@@ -185,13 +181,14 @@ def configure_letsencrypt():
         run('./letsencrypt-auto certonly --standalone')
     sudo('rm -rf /tmp/git')
     env.letsnecrypt_folder = remove_trailing_slash_if_present(
-        prompt('What\'s your letsencrypt directory? (e.g. /etc/letsencrypt/live/example.com)')
+        prompt('What\'s your letsencrypt directory? (e.g. /etc/letsencrypt/live/example.com, see above)')
     )
     print('OK, it\'s %s' % env.letsnecrypt_folder)
     create_ssl_params_file()
 
 
 def create_nginx_config():
+    configure_letsencrypt()
     if not hasattr(env, 'domain_name'):
         env.domain_name = prompt('Enter your domain name:', default='metup_facebook_bot')
     nginx_config_path = '/etc/nginx/sites-available/%s' % env.domain_name
@@ -232,7 +229,12 @@ server {{
         use_sudo=True
     )
     nginx_config_alias = '/etc/nginx/sites-enabled/%s' % env.domain_name
-    sudo('ln -s %s %s' % (nginx_config_path, nginx_config_alias))
+    sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
+
+
+def start_uwsgi():
+    sudo('systemctl daemon-reload')
+    sudo('systemctl start %s' % env.uwsgi_service_file_name)
 
 
 def start_nginx():
@@ -245,4 +247,17 @@ def run_setup_scripts():
 
 
 def prepare_machine():
-    pass
+    prepare_sources()
+    install_nginx()
+    install_database()
+
+    setup_database()
+    setup_firewall()
+
+    create_ini_file()
+    create_uwsgi_service_file()
+    create_nginx_config()
+
+    start_uwsgi()
+    start_nginx()
+    run_setup_scripts()
