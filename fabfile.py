@@ -315,8 +315,8 @@ def deploy(branch='master'):
         if run('test -d %s' % env.sources_directory).failed:
             abort('run prepare_machine first')
     with cd(env.sources_directory):
+        sudo('git fetch origin %s' % branch)
         sudo('git checkout %s' % branch)
-        sudo('git pull origin %s' % branch)
         install_modules()
         start_uwsgi()
         start_nginx()
