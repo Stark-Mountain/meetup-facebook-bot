@@ -297,7 +297,8 @@ def test():
 
 
 def commit():
-    local("git add -p && git commit")
+    with settings(warn_only=True):
+        local("git add -p && git commit")
 
 
 def push(branch):
