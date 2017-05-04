@@ -317,6 +317,7 @@ def deploy(branch='master'):
     with cd(env.sources_directory):
         sudo('git fetch origin %s' % branch)
         sudo('git checkout %s' % branch)
+        sudo('git merge origin %s' % branch)
         install_modules()
         start_uwsgi()
         start_nginx()
