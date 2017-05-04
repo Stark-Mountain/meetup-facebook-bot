@@ -2,7 +2,7 @@ import os.path
 from getpass import getpass
 from io import StringIO
 
-from fabric.api import *
+from fabric.api import sudo, run, cd, prefix, settings, task
 from fabric.contrib.console import confirm
 
 
@@ -37,6 +37,17 @@ def install_modules(code_directory, venv_bin_directory):
         sudo('pip install -r %s' % requirements_path)
 
 
+def install_nginx():
+    sudo('apt-get update')
+    sudo('apt-get install nginx')
+    run('echo "0 */12 * * * systemctl restart nginx" | sudo tee --append /etc/crontab')
+
+
+def install_postgres():
+    sudo('apt-get update')
+    sudo('apt-get install postgresql postgresql-contrib')
+
+
 @task
 def prepare_machine():
     install_python()
@@ -45,3 +56,5 @@ def prepare_machine():
     get_sources(repository_url, code_directory)
     venv_bin_directory = setup_venv(code_directory)
     install_modules(code_directory, venv_bin_directory)
+    install_nginx()
+    install_postgres()
