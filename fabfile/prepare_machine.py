@@ -82,23 +82,17 @@ def prepare_machine():
     install_nginx()
     install_postgres()
     setup_ufw()
-    database_username = env.user
-    database_name = env.user
-    database_url = setup_postgres(database_username, database_name)
-    page_id = prompt('Enter PAGE_ID:')
-    app_id = prompt('Enter APP_ID:')
+    database_url = setup_postgres(username=env.user, database_name=env.user)
     access_token = getpass('Enter the app ACCESS_TOKEN: ')
-    verify_token = getpass('Enter VERIFY_TOKEN: ')
     socket_path = '/tmp/meetup-facebook-bot.socket'
-    ini_file_template = load_text_from_file('fabfile/meetup-facebook-bot.ini')
     ini_file_path = os.path.join(code_directory, 'meetup-facebook-bot.ini')
     create_ini_file(
-        ini_file_template,
-        ini_file_path,
+        ini_file_template=load_text_from_file('fabfile/meetup-facebook-bot.ini'),
+        ini_file_path=ini_file_path,
         database_url=database_url,
         access_token=access_token,
-        page_id=page_id,
-        app_id=app_id,
-        verify_token=verify_token,
+        page_id=prompt('Enter PAGE_ID:'),
+        app_id=prompt('Enter APP_ID:'),
+        verify_token=getpass('Enter VERIFY_TOKEN: '),
         socket_path=socket_path
     )
