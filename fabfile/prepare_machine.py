@@ -48,6 +48,12 @@ def install_postgres():
     sudo('apt-get install postgresql postgresql-contrib')
 
 
+def setup_ufw():
+    sudo('ufw allow "Nginx Full"')
+    sudo('ufw allow OpenSSH')
+    sudo('ufw enable')
+
+
 @task
 def prepare_machine():
     install_python()
@@ -58,3 +64,4 @@ def prepare_machine():
     install_modules(code_directory, venv_bin_directory)
     install_nginx()
     install_postgres()
+    setup_ufw()
