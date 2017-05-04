@@ -2,7 +2,7 @@ import os.path
 from getpass import getpass
 from io import StringIO
 
-from fabric.api import sudo, run, cd, prefix, settings, task
+from fabric.api import sudo, run, cd, prefix, settings, task, env
 from fabric.contrib.console import confirm
 
 
@@ -54,6 +54,13 @@ def setup_ufw():
     sudo('ufw enable')
 
 
+def setup_postgres(username, database_name):
+    with settings(warn_only=True):
+        run('sudo -u postgres createuser %s -s' % username)
+        run('sudo -u postgres createdb %s' % database_name)
+    return 'postgresql://%s@/%s' % (username, database_name)
+
+
 @task
 def prepare_machine():
     install_python()
@@ -65,3 +72,6 @@ def prepare_machine():
     install_nginx()
     install_postgres()
     setup_ufw()
+    database_username = env.user
+    database_name = env.user
+    database_url = setup_postgres(database_username, database_name)
