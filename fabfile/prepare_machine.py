@@ -66,9 +66,9 @@ def load_text_from_file(filepath):
         return text_file.read()
 
 
-def create_ini_file(ini_file_template, ini_file_path, **kwargs):
-    ini_file = ini_file_template.format(**kwargs)
-    put(BytesIO(ini_file.encode('utf-8')), ini_file_path, use_sudo=True)
+def put_formatted_template_on_server(template, destination_file_path, **kwargs):
+    formatted_template = template.format(**kwargs)
+    put(BytesIO(formatted_template.encode('utf-8')), destination_file_path, use_sudo=True)
 
 
 @task
@@ -86,9 +86,9 @@ def prepare_machine():
     access_token = getpass('Enter the app ACCESS_TOKEN: ')
     socket_path = '/tmp/meetup-facebook-bot.socket'
     ini_file_path = os.path.join(code_directory, 'meetup-facebook-bot.ini')
-    create_ini_file(
-        ini_file_template=load_text_from_file('fabfile/templates/meetup-facebook-bot.ini'),
-        ini_file_path=ini_file_path,
+    put_formatted_template_on_server(
+        template=load_text_from_file('fabfile/templates/meetup-facebook-bot.ini'),
+        destination_file_path=ini_file_path,
         database_url=database_url,
         access_token=access_token,
         page_id=prompt('Enter PAGE_ID:'),
