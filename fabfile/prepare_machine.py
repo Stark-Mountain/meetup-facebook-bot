@@ -87,7 +87,7 @@ def prepare_machine():
     socket_path = '/tmp/meetup-facebook-bot.socket'
     ini_file_path = os.path.join(code_directory, 'meetup-facebook-bot.ini')
     create_ini_file(
-        ini_file_template=load_text_from_file('fabfile/meetup-facebook-bot.ini'),
+        ini_file_template=load_text_from_file('fabfile/templates/meetup-facebook-bot.ini'),
         ini_file_path=ini_file_path,
         database_url=database_url,
         access_token=access_token,
