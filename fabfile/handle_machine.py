@@ -11,15 +11,17 @@ def install_python():
     sudo('apt-get install python3-pip python3-dev python3-venv')
 
 
-def get_sources(repository_url, code_directory):
+def fetch_sources_from_repo(repository_url, branch, code_directory):
     with settings(warn_only=True):
         source_existence_check = run('test -d %s' % code_directory)
     if source_existence_check.succeeded:
-        if not confirm('Code directory already exists. Remove it?'):
+        remove_repository_command = 'rm -rf %s' % code_directory
+        if not confirm('Gonna run "%s". Continue?' % remove_repository_command):
             print('Skipping git clone.')
             return
-        sudo('rm -rf %s' % code_directory)
-    sudo('git clone %s %s' % (repository_url, code_directory))
+        sudo(remove_repository_command)
+    git_clone_command = 'git clone --branch --single-branch {0} {1} {2}'
+    sudo(git_clone_command.format(branch, repository_url, code_directory))
 
 
 def setup_venv(code_directory):
@@ -86,7 +88,7 @@ def configure_letsencrypt():
     with cd("/tmp/git"):
         sudo("git clone https://github.com/letsencrypt/letsencrypt")
     with cd("/tmp/git/letsencrypt"):
-        run('./letsencrypt-auto certonly --standalone')
+        sudo('./letsencrypt-auto certonly --standalone')
     sudo('rm -rf /tmp/git')
 
 
@@ -114,12 +116,16 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
         run('python3 %s/set_start_button.py' % code_directory)
 
 
+PROJECT_FOLDER = '/var/www/meetup-facebook-bot'
+REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
+UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
+
+
 @task
 def prepare_machine():
     install_python()
-    repository_url = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
-    code_directory = '/var/www/meetup-facebook-bot'
-    get_sources(repository_url, code_directory)
+    code_directory = PROJECT_FOLDER
+    fetch_sources_from_repo(REPOSITORY_URL, branch='master', code_directory=code_directory)
     venv_bin_directory = setup_venv(code_directory)
     install_modules(code_directory, venv_bin_directory)
 
@@ -142,10 +148,9 @@ def prepare_machine():
         socket_path=socket_path
     )
 
-    uwsgi_service_name = 'meetup-facebook-bot.service'
     put_formatted_template_on_server(
         template=load_text_from_file('fabfile/templates/meetup-facebook-bot.service'),
-        destination_file_path=os.path.join('/etc/systemd/system/', uwsgi_service_name),
+        destination_file_path=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
         user=env.user,
         work_dir=code_directory,
         env_bin_dir=venv_bin_directory,
@@ -181,6 +186,15 @@ def prepare_machine():
     nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', domain_name)
     sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
 
-    start_uwsgi(uwsgi_service_name)
+    start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
     run_setup_scripts(access_token, database_url, venv_bin_directory, code_directory)
+
+
+@task
+def deploy(branch='master'):
+    fetch_sources_from_repo(REPOSITORY_URL, branch, PROJECT_FOLDER)
+    venv_bin_path = setup_venv(PROJECT_FOLDER)
+    install_modules(PROJECT_FOLDER, venv_bin_path)
+    start_uwsgi(UWSGI_SERVICE_NAME)
+    start_nginx()
