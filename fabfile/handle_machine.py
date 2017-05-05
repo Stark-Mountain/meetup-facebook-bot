@@ -20,7 +20,7 @@ def fetch_sources_from_repo(repository_url, branch, code_directory):
             print('Skipping git clone.')
             return
         sudo(remove_repository_command)
-    git_clone_command = 'git clone --branch --single-branch {0} {1} {2}'
+    git_clone_command = 'git clone {1} {2} --branch {0} --single-branch'
     sudo(git_clone_command.format(branch, repository_url, code_directory))
 
 
