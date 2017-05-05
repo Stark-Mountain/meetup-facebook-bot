@@ -116,7 +116,7 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
         run('python3 %s/set_start_button.py' % code_directory)
 
 
-PROJECT_FOLDER = '/var/www/meetup-facebook-bot'
+PROJECT_FOLDER = '/var/www/meetup-facebook-bot'  # must not end with '/'
 REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
 UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
@@ -135,7 +135,10 @@ def prepare_machine():
     database_url = setup_postgres(username=env.user, database_name=env.user)
     access_token = getpass('Enter the app ACCESS_TOKEN: ')
     socket_path = '/tmp/meetup-facebook-bot.socket'
-    ini_file_path = os.path.join(PROJECT_FOLDER, 'meetup-facebook-bot.ini')
+    permanent_project_folder = "%s.permanent" % PROJECT_FOLDER
+    with settings(warn_only=True):
+        sudo('mkdir %s' % permanent_project_folder)
+    ini_file_path = os.path.join(permanent_project_folder, 'meetup-facebook-bot.ini')
     put_formatted_template_on_server(
         template=load_text_from_file('fabfile/templates/meetup-facebook-bot.ini'),
         destination_file_path=ini_file_path,
