@@ -2,7 +2,8 @@ import os.path
 from getpass import getpass
 from io import BytesIO
 
-from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env
+from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
+        local
 from fabric.contrib.console import confirm
 
 
@@ -132,15 +133,15 @@ def prepare_machine():
     install_postgres()
     setup_ufw()
 
-    database_url = setup_postgres(username=env.user, database_name=env.user)
-    access_token = getpass('Enter the app ACCESS_TOKEN: ')
-    socket_path = '/tmp/meetup-facebook-bot.socket'
     permanent_project_folder = "%s.permanent" % PROJECT_FOLDER
     with settings(warn_only=True):
         sudo('mkdir %s' % permanent_project_folder)
+    database_url = setup_postgres(username=env.user, database_name=env.user)
+    access_token = getpass('Enter the app ACCESS_TOKEN: ')
+    socket_path = '/tmp/meetup-facebook-bot.socket'
     ini_file_path = os.path.join(permanent_project_folder, 'meetup-facebook-bot.ini')
     put_formatted_template_on_server(
-        template=load_text_from_file('fabfile/templates/meetup-facebook-bot.ini'),
+        template=load_text_from_file('deploy_configs/meetup-facebook-bot.ini'),
         destination_file_path=ini_file_path,
         database_url=database_url,
         access_token=access_token,
@@ -151,7 +152,7 @@ def prepare_machine():
     )
 
     put_formatted_template_on_server(
-        template=load_text_from_file('fabfile/templates/meetup-facebook-bot.service'),
+        template=load_text_from_file('deploy_configs/meetup-facebook-bot.service'),
         destination_file_path=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
         user=env.user,
         work_dir=PROJECT_FOLDER,
@@ -164,7 +165,7 @@ def prepare_machine():
     create_dhparam_if_necessary(dhparam_path)
     ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
     put_formatted_template_on_server(
-        template=load_text_from_file('fabfile/templates/ssl_params'),
+        template=load_text_from_file('deploy_configs/ssl_params'),
         destination_file_path=ssl_params_path,
         dhparam_path=dhparam_path
     )
@@ -176,7 +177,7 @@ def prepare_machine():
     domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
     nginx_config_path = os.path.join('/etc/nginx/sites-available', domain_name)
     put_formatted_template_on_server(
-        template=load_text_from_file('fabfile/templates/nginx_config'),
+        template=load_text_from_file('deploy_configs/nginx_config'),
         destination_file_path=nginx_config_path,
         source_dir=PROJECT_FOLDER,
         domain=domain_name,
@@ -209,3 +210,26 @@ def print_service_status(service_name):
 @task
 def show_status():
     print_service_status(UWSGI_SERVICE_NAME)
+
+
+def test():
+    with settings(warn_only=True):
+        result = local('python3 -m pytest tests', capture=True)
+    if result.failed and not confirm('Tests failed. Continue anyway?'):
+        abort('Aborting at user request.')
+
+
+def commit():
+    with settings(warn_only=True):
+        local('git add -i && git commit')
+
+
+def push(branch):
+    local('git push origin %s' % branch)
+
+
+@task
+def prepare_deploy(branch):
+    test()
+    commit()
+    push(branch)
