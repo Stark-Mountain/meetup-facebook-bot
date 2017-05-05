@@ -200,3 +200,12 @@ def deploy(branch='master'):
     install_modules(PROJECT_FOLDER, venv_bin_path)
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
+
+
+def print_service_status(service_name):
+    sudo('systemctl status %s' % service_name)
+
+
+@task
+def show_status():
+    print_service_status(UWSGI_SERVICE_NAME)
