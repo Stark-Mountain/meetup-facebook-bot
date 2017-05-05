@@ -1,25 +1,10 @@
+import os.path
 from getpass import getpass
-from io import StringIO
+from io import BytesIO
 
-from fabric.api import settings, local, abort, run, cd, env,\
-    prefix, sudo, prompt, put, shell_env, task
-from fabric.contrib.console import confirm 
-
-# these can have arbitrary values
-env.sources_directory = '/var/www/meetup-facebook-bot'
-env.socket_path = '/tmp/meetup-facebook-bot.socket'
-env.app_ini_filepath = '%s/meetup-facebook-bot.ini' % env.sources_directory
-env.uwsgi_service_file_name = 'meetup_facebook_bot.service'
-env.ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
-
-# these are are not arbitrary
-env.venv_folder = 'venv'
-env.venv_directory = '%s/%s' % (env.sources_directory, env.venv_folder)
-env.venv_activate_command = 'source %s/bin/activate' % env.venv_directory
-
-# these will be set later
-DATABASE_URL = None
-ACCESS_TOKEN = None
+from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
+        local
+from fabric.contrib.console import confirm
 
 
 def install_python():
@@ -27,32 +12,32 @@ def install_python():
     sudo('apt-get install python3-pip python3-dev python3-venv')
 
 
-def get_sources():
-    repository_url = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'  
+def fetch_sources_from_repo(repository_url, branch, code_directory):
     with settings(warn_only=True):
-        source_existence_check = run('test -d %s' % env.sources_directory)
+        source_existence_check = run('test -d %s' % code_directory)
     if source_existence_check.succeeded:
-        print('The sources alrady exist. We\'ll remove them before cloning.')
-        sudo('rm -rf %s' % env.sources_directory)
-    sudo('git clone %s %s' % (repository_url, env.sources_directory))
+        remove_repository_command = 'rm -rf %s' % code_directory
+        if not confirm('Gonna run "%s". Continue?' % remove_repository_command):
+            print('Skipping git clone.')
+            return
+        sudo(remove_repository_command)
+    git_clone_command = 'git clone {1} {2} --branch {0} --single-branch'
+    sudo(git_clone_command.format(branch, repository_url, code_directory))
 
 
-def setup_venv():
-    with cd(env.sources_directory):
-        sudo('python3 -m venv %s' % env.venv_folder)
+def setup_venv(code_directory):
+    venv_folder = 'venv'
+    with cd(code_directory):
+        sudo('python3 -m venv %s' % venv_folder)
+    return os.path.join(code_directory, venv_folder, 'bin')
 
 
-def install_modules():
-    requirements_path = '%s/requirements.txt' % env.sources_directory
-    with prefix(env.venv_activate_command):
+def install_modules(code_directory, venv_bin_directory):
+    requirements_path = os.path.join(code_directory, 'requirements.txt')
+    venv_activate_path = os.path.join(venv_bin_directory, 'activate')
+    with prefix('source %s' % venv_activate_path):
         sudo('pip install wheel')
         sudo('pip install -r %s' % requirements_path)
-
-
-def prepare_sources():
-    get_sources()
-    setup_venv()
-    install_modules()
 
 
 def install_nginx():
@@ -61,127 +46,41 @@ def install_nginx():
     run('echo "0 */12 * * * systemctl restart nginx" | sudo tee --append /etc/crontab')
 
 
-def install_database():
+def install_postgres():
     sudo('apt-get update')
     sudo('apt-get install postgresql postgresql-contrib')
 
 
-def setup_database():
-    db_username = env.user
-    db_name = env.user
-    with settings(warn_only=True):
-        run('sudo -u postgres createuser %s -s' % db_username)
-        run('sudo -u postgres createdb %s' % db_name)
-    global DATABASE_URL
-    DATABASE_URL = 'postgresql://%s@/%s' % (db_username, db_name)
-
-def setup_firewall():
+def setup_ufw():
     sudo('ufw allow "Nginx Full"')
     sudo('ufw allow OpenSSH')
     sudo('ufw enable')
 
 
-def create_ini_file():
-    global DATABASE_URL
-    if not DATABASE_URL:
-        DATABASE_URL = prompt('Enter DATABASE_URL:')
-    global ACCESS_TOKEN
-    ACCESS_TOKEN = getpass('Enter ACCESS_TOKEN:')
-    page_id = prompt('Enter PAGE_ID:')
-    app_id = prompt('Enter APP_ID:')
-    verify_token = getpass('Enter VERIFY_TOKEN:')
-    put(StringIO(
-u'''[uwsgi]
-env = DATABASE_URL={db_url}
-env = ACCESS_TOKEN={access_token}
-env = PAGE_ID={page_id}
-env = APP_ID={app_id}
-env = VERIFY_TOKEN={verify_token}
-
-module = wsgi:app
-master = true
-processes = 4
-socket = {socket_path}
-chmod-socket = 660
-vacuum = true
-die-on-term = true'''.format(
-                db_url=DATABASE_URL,
-                access_token=ACCESS_TOKEN,
-                page_id=page_id,
-                app_id=app_id,
-                verify_token=verify_token,
-                socket_path=env.socket_path
-            )
-        ), 
-        env.app_ini_filepath,
-        use_sudo=True
-    )
+def setup_postgres(username, database_name):
+    with settings(warn_only=True):
+        run('sudo -u postgres createuser %s -s' % username)
+        run('sudo -u postgres createdb %s' % database_name)
+    return 'postgresql://%s@/%s' % (username, database_name)
 
 
-def create_uwsgi_service_file():
-    put(StringIO(
-u'''[Unit]
-Description=uWSGI instance to serve meetup_facebook_bot
-After=network.target
-
-[Service]
-User={user}
-Group=www-data
-WorkingDirectory={work_dir}
-Environment="PATH={env_bin_dir}"
-ExecStart={uwsgi_path} --ini {app_ini_path}
-
-[Install]
-WantedBy=multi-user.target'''.format(
-                user=env.user,
-                work_dir=env.sources_directory,
-                env_bin_dir='%s/bin' % env.venv_directory,
-                uwsgi_path = '%s/bin/uwsgi' % env.venv_directory,
-                app_ini_path=env.app_ini_filepath
-            )
-        ),
-        '/etc/systemd/system/%s' % env.uwsgi_service_file_name,
-        use_sudo=True
-    )
+def load_text_from_file(filepath):
+    with open(filepath) as text_file:
+        return text_file.read()
 
 
-def create_ssl_params_file():
-    dhparam_path = '/etc/ssl/certs/dhparam.pem'
+def put_formatted_template_on_server(template, destination_file_path, **kwargs):
+    formatted_template = template.format(**kwargs)
+    put(BytesIO(formatted_template.encode('utf-8')), destination_file_path, use_sudo=True)
+
+
+def create_dhparam_if_necessary(dhparam_path):
     with settings(warn_only=True):
         dhparam_existence_check = run('test -f %s' % dhparam_path)
     if dhparam_existence_check.succeeded:
         print('dhparam file exists, skipping this step')
-        return;
+        return
     sudo('openssl dhparam -out %s 2048' % dhparam_path)
-    put(StringIO(
-        u'''# from https://cipherli.st/
-ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-ssl_prefer_server_ciphers on;
-ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
-ssl_ecdh_curve secp384r1;
-ssl_session_cache shared:SSL:10m;
-ssl_session_tickets off;
-ssl_stapling on;
-ssl_stapling_verify on;
-resolver 8.8.8.8 8.8.4.4 valid=300s;
-resolver_timeout 5s;
-# Disable preloading HSTS for now.  You can use the commented out header line that includes
-# the "preload" directive if you understand the implications.
-#add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
-add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";
-add_header X-Frame-Options DENY;
-add_header X-Content-Type-Options nosniff;
-ssl_dhparam {dhparam_path};'''.format(
-                dhparam_path=dhparam_path,
-            )
-        ),
-        env.ssl_params_path,
-        use_sudo=True
-    )
-
-
-def remove_trailing_slash_if_present(path):
-    return path[:-1] if path[-1] == '/' else path
 
 
 def configure_letsencrypt():
@@ -190,100 +89,127 @@ def configure_letsencrypt():
     with cd("/tmp/git"):
         sudo("git clone https://github.com/letsencrypt/letsencrypt")
     with cd("/tmp/git/letsencrypt"):
-        run('./letsencrypt-auto certonly --standalone')
+        sudo('./letsencrypt-auto certonly --standalone')
     sudo('rm -rf /tmp/git')
-    env.letsnecrypt_folder = remove_trailing_slash_if_present(
-        prompt('What\'s your letsencrypt directory? (e.g. /etc/letsencrypt/live/example.com, see above)')
-    )
-    print('OK, it\'s %s' % env.letsnecrypt_folder)
-    create_ssl_params_file()
 
 
-def create_nginx_config():
-    configure_letsencrypt()
-    domain_name = prompt('Enter your domain name:', default='metup_facebook_bot')
-    nginx_config_path = '/etc/nginx/sites-available/%s' % domain_name
-    put(StringIO(
-        u'''server {{
-    listen 80;
-    listen [::]:80;
-
-    server_name {domain};
-    return 301 https://$server_name$request_uri;
-}}
-
-server {{
-    listen 443 ssl default_server;
-    listen [::]:443 ssl default_server;
-    include {ssl_params_path};
-
-    ssl_certificate {fullchain_path};
-    ssl_certificate_key {privkey_path};
-
-    root {source_dir};
-    index index.html index.htm index.nginx-debian.html;
-
-    location / {{
-        include uwsgi_params;
-        uwsgi_pass unix:{socket_path};
-    }}
-}}'''.format(
-                source_dir=env.sources_directory,
-                domain=domain_name,
-                ssl_params_path=env.ssl_params_path,
-                fullchain_path='%s/fullchain.pem' % env.letsnecrypt_folder,
-                privkey_path='%s/privkey.pem' % env.letsnecrypt_folder,
-                socket_path=env.socket_path
-            )
-        ),
-        nginx_config_path,
-        use_sudo=True
-    )
-    nginx_config_alias = '/etc/nginx/sites-enabled/%s' % domain_name
-    sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
-
-
-def start_uwsgi():
+def start_uwsgi(uwsgi_service_name):
     sudo('systemctl daemon-reload')
-    sudo('systemctl restart %s' % env.uwsgi_service_file_name)
+    sudo('systemctl restart %s' % uwsgi_service_name)
 
 
 def start_nginx():
     sudo('systemctl restart nginx')
 
 
-def run_setup_scripts():
-    global ACCESS_TOKEN
-    global DATABASE_URL
+def run_setup_scripts(access_token, database_url, venv_bin_directory, code_directory):
     environ_params = {
-        'ACCESS_TOKEN': ACCESS_TOKEN,
-        'DATABASE_URL': DATABASE_URL,
+        'ACCESS_TOKEN': access_token,
+        'DATABASE_URL': database_url,
         'PAGE_ID': '1',  # this and the following are needed just to avoid syntax errors
         'APP_ID': '1',
         'VERIFY_TOKEN': '1',
     }
-    with cd(env.sources_directory), shell_env(**environ_params), prefix(env.venv_activate_command):
-        run('python3 %s/database_setup.py' % env.sources_directory)
-        run('python3 %s/set_start_button.py' % env.sources_directory)
+    venv_activate_path = os.path.join(venv_bin_directory, 'activate')
+    venv_activate_command = 'source %s' % venv_activate_path
+    with cd(code_directory), shell_env(**environ_params), prefix(venv_activate_command):
+        run('python3 %s/database_setup.py' % code_directory)
+        run('python3 %s/set_start_button.py' % code_directory)
+
+
+PROJECT_FOLDER = '/var/www/meetup-facebook-bot'  # must not end with '/'
+REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
+UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
 
 @task
 def prepare_machine():
     install_python()
-    prepare_sources()
+    fetch_sources_from_repo(REPOSITORY_URL, branch='master', code_directory=PROJECT_FOLDER)
+    venv_bin_directory = setup_venv(PROJECT_FOLDER)
+    install_modules(PROJECT_FOLDER, venv_bin_directory)
+
     install_nginx()
-    install_database()
+    install_postgres()
+    setup_ufw()
 
-    setup_database()
-    setup_firewall()
+    permanent_project_folder = "%s.permanent" % PROJECT_FOLDER
+    with settings(warn_only=True):
+        sudo('mkdir %s' % permanent_project_folder)
+    database_url = setup_postgres(username=env.user, database_name=env.user)
+    access_token = getpass('Enter the app ACCESS_TOKEN: ')
+    socket_path = '/tmp/meetup-facebook-bot.socket'
+    ini_file_path = os.path.join(permanent_project_folder, 'meetup-facebook-bot.ini')
+    put_formatted_template_on_server(
+        template=load_text_from_file('deploy_configs/meetup-facebook-bot.ini'),
+        destination_file_path=ini_file_path,
+        database_url=database_url,
+        access_token=access_token,
+        page_id=prompt('Enter PAGE_ID:'),
+        app_id=prompt('Enter APP_ID:'),
+        verify_token=getpass('Enter VERIFY_TOKEN: '),
+        socket_path=socket_path
+    )
 
-    create_ini_file()
-    create_uwsgi_service_file()
-    create_nginx_config()
+    put_formatted_template_on_server(
+        template=load_text_from_file('deploy_configs/meetup-facebook-bot.service'),
+        destination_file_path=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
+        user=env.user,
+        work_dir=PROJECT_FOLDER,
+        env_bin_dir=venv_bin_directory,
+        uwsgi_path=os.path.join(venv_bin_directory, 'uwsgi'),
+        app_ini_path=ini_file_path
+    )
 
-    start_uwsgi()
+    dhparam_path = '/etc/ssl/certs/dhparam.pem'
+    create_dhparam_if_necessary(dhparam_path)
+    ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
+    put_formatted_template_on_server(
+        template=load_text_from_file('deploy_configs/ssl_params'),
+        destination_file_path=ssl_params_path,
+        dhparam_path=dhparam_path
+    )
+    configure_letsencrypt()
+    letsnecrypt_folder = prompt('What\'s your letsencrypt directory? '
+                                '(e.g. /etc/letsencrypt/live/example.com, see above)')
+    print('Got it, it\'s %s' % letsnecrypt_folder)
+
+    domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
+    nginx_config_path = os.path.join('/etc/nginx/sites-available', domain_name)
+    put_formatted_template_on_server(
+        template=load_text_from_file('deploy_configs/nginx_config'),
+        destination_file_path=nginx_config_path,
+        source_dir=PROJECT_FOLDER,
+        domain=domain_name,
+        ssl_params_path=ssl_params_path,
+        fullchain_path=os.path.join(letsnecrypt_folder, 'fullchain.pem'),
+        privkey_path=os.path.join(letsnecrypt_folder, 'privkey.pem'),
+        socket_path=socket_path
+    )
+    nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', domain_name)
+    sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
+
+    start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
-    run_setup_scripts()
+    run_setup_scripts(access_token, database_url, venv_bin_directory, PROJECT_FOLDER)
+
+
+@task
+def deploy(branch='master'):
+    fetch_sources_from_repo(REPOSITORY_URL, branch, PROJECT_FOLDER)
+    venv_bin_path = setup_venv(PROJECT_FOLDER)
+    install_modules(PROJECT_FOLDER, venv_bin_path)
+    start_uwsgi(UWSGI_SERVICE_NAME)
+    start_nginx()
+
+
+def print_service_status(service_name):
+    sudo('systemctl status %s' % service_name)
+
+
+@task
+def show_status():
+    print_service_status(UWSGI_SERVICE_NAME)
 
 
 def test():
@@ -295,7 +221,7 @@ def test():
 
 def commit():
     with settings(warn_only=True):
-        local('git add -p && git commit')
+        local('git add -i && git commit')
 
 
 def push(branch):
@@ -307,17 +233,3 @@ def prepare_deploy(branch):
     test()
     commit()
     push(branch)
-
-
-@task
-def deploy(branch='master'):
-    with settings(warn_only=True):
-        if run('test -d %s' % env.sources_directory).failed:
-            abort('run prepare_machine first')
-    with cd(env.sources_directory):
-        sudo('git fetch origin %s' % branch)
-        sudo('git checkout %s' % branch)
-        sudo('git merge origin %s' % branch)
-        install_modules()
-        start_uwsgi()
-        start_nginx()
