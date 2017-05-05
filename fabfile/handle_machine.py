@@ -124,10 +124,9 @@ UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 @task
 def prepare_machine():
     install_python()
-    code_directory = PROJECT_FOLDER
-    fetch_sources_from_repo(REPOSITORY_URL, branch='master', code_directory=code_directory)
-    venv_bin_directory = setup_venv(code_directory)
-    install_modules(code_directory, venv_bin_directory)
+    fetch_sources_from_repo(REPOSITORY_URL, branch='master', code_directory=PROJECT_FOLDER)
+    venv_bin_directory = setup_venv(PROJECT_FOLDER)
+    install_modules(PROJECT_FOLDER, venv_bin_directory)
 
     install_nginx()
     install_postgres()
@@ -136,7 +135,7 @@ def prepare_machine():
     database_url = setup_postgres(username=env.user, database_name=env.user)
     access_token = getpass('Enter the app ACCESS_TOKEN: ')
     socket_path = '/tmp/meetup-facebook-bot.socket'
-    ini_file_path = os.path.join(code_directory, 'meetup-facebook-bot.ini')
+    ini_file_path = os.path.join(PROJECT_FOLDER, 'meetup-facebook-bot.ini')
     put_formatted_template_on_server(
         template=load_text_from_file('fabfile/templates/meetup-facebook-bot.ini'),
         destination_file_path=ini_file_path,
@@ -152,7 +151,7 @@ def prepare_machine():
         template=load_text_from_file('fabfile/templates/meetup-facebook-bot.service'),
         destination_file_path=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
         user=env.user,
-        work_dir=code_directory,
+        work_dir=PROJECT_FOLDER,
         env_bin_dir=venv_bin_directory,
         uwsgi_path=os.path.join(venv_bin_directory, 'uwsgi'),
         app_ini_path=ini_file_path
@@ -176,7 +175,7 @@ def prepare_machine():
     put_formatted_template_on_server(
         template=load_text_from_file('fabfile/templates/nginx_config'),
         destination_file_path=nginx_config_path,
-        source_dir=code_directory,
+        source_dir=PROJECT_FOLDER,
         domain=domain_name,
         ssl_params_path=ssl_params_path,
         fullchain_path=os.path.join(letsnecrypt_folder, 'fullchain.pem'),
@@ -188,7 +187,7 @@ def prepare_machine():
 
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
-    run_setup_scripts(access_token, database_url, venv_bin_directory, code_directory)
+    run_setup_scripts(access_token, database_url, venv_bin_directory, PROJECT_FOLDER)
 
 
 @task
