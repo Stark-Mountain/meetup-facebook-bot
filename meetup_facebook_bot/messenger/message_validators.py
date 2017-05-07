@@ -25,9 +25,9 @@ def is_talk_rate_command(messaging_event):
 
 
 def is_talk_like_command(messaging_event):
-    if 'postback' not in messaging_event:
+    if not is_quick_button(messaging_event):
         return False
-    return 'like talk' in messaging_event['postback']['payload']
+    return 'like talk' in messaging_event['message']['quick_reply']['payload']
 
 
 def has_sender_id(messaging_event):
