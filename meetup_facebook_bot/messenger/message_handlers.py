@@ -23,7 +23,7 @@ def handle_talk_rate_command(messaging_event, access_token, db_session):
 
 def handle_talk_like_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
-    payload = messaging_event['postback']['payload']
+    payload = messaging_event['message']['quick_reply']['payload']
     talk_id = int(payload.split(' ')[-1])
     talk = db_session.query(Talk).get(talk_id)
     talk.revert_like(sender_id, db_session)
