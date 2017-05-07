@@ -37,9 +37,7 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
     else:
         like_text_message = 'Убрал лайк'
     like_message_body = {
-        "message": {
-            "text": like_text_message
-        }
+        "text": like_text_message
     }
     return send_message_to_facebook(access_token, user_id, like_message_body)
 
