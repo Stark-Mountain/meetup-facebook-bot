@@ -3,7 +3,7 @@ from getpass import getpass
 from io import BytesIO
 
 from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
-        local
+        local, abort
 from fabric.contrib.console import confirm
 
 
