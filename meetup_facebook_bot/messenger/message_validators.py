@@ -30,5 +30,13 @@ def is_talk_like_command(messaging_event):
     return 'like talk' in messaging_event['message']['quick_reply']['payload']
 
 
+def is_message_with_text(messaging_event):
+    if 'message' not in messaging_event:
+        return False
+    if 'text' not in messaging_event['message']:
+        return False
+    return True
+
+
 def has_sender_id(messaging_event):
     return 'sender' in messaging_event and 'id' in messaging_event['sender']
