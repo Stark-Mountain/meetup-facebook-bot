@@ -11,4 +11,4 @@ class Speaker(Base):
     token = Column(String(128), unique=True, nullable=False)
 
     def __repr__(self):
-        return '<Speaker %r>' % self.facebook_id
+        return '<Speaker %r>' % self.id
