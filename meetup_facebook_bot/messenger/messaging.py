@@ -49,7 +49,11 @@ def send_schedule(access_token, user_id, talks, db_session):
     elements = []
     for talk in talks:
         number_of_likes = talk.count_likes(db_session)
-        element_subtitle = 'Лайков: %d\nСпикер: %s' % (number_of_likes, talk.speaker.name)
+        if talk.is_liked_by(user_id, db_session):
+            like_text = 'Вы лайкнули этот доклад'
+        else:
+            like_text = 'Вы не оценили этот докад'
+        element_subtitle = '%s\nЛайков: %d\nСпикер: %s' % (like_text, number_of_likes, talk.speaker.name)
         element = {
             'title': talk.title,
             'subtitle': element_subtitle,
