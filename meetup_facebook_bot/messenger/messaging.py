@@ -37,9 +37,7 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
     else:
         like_text_message = 'Убрал лайк'
     like_message_body = {
-        "message": {
-            "text": like_text_message
-        }
+        "text": like_text_message
     }
     return send_message_to_facebook(access_token, user_id, like_message_body)
 
@@ -52,7 +50,6 @@ def send_schedule(access_token, user_id, talks, db_session):
     for talk in talks:
         number_of_likes = talk.count_likes(db_session)
         element_subtitle = 'Лайков: %d\nСпикер: %s' % (number_of_likes, talk.speaker.name)
-        rate_button_title = 'Оценить'
         element = {
             'title': talk.title,
             'subtitle': element_subtitle,
@@ -64,7 +61,7 @@ def send_schedule(access_token, user_id, talks, db_session):
                 },
                 {
                     'type': 'postback',
-                    'title': rate_button_title,
+                    'title': 'Оценить',
                     'payload': 'rate talk %d' % talk.id
                 },
                 {

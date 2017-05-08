@@ -53,10 +53,6 @@ def webhook():
             message_handlers.handle_talk_like_command
         ),
         (
-            message_validators.is_talk_like_command,
-            message_handlers.handle_message_with_sender_id
-        ),
-        (
             message_validators.has_sender_id,
             message_handlers.handle_message_with_sender_id
         )

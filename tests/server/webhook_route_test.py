@@ -79,7 +79,7 @@ class WebhookRouteTestCase(TestCase):
         talk_mock = MagicMock(talk_id=1)
         talk_mock.revert_like = MagicMock()
         server.db_session.query(talk_class_mock).get = MagicMock(return_value=talk_mock)
-        known_input = self.generate_postback('like talk 1')
+        known_input = self.generate_quick_reply('like talk 1')
         self.app.post('/', data=json.dumps(known_input), content_type='application/json')
         talk_mock.revert_like.assert_called_once_with(
             self.sender_id,
