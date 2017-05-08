@@ -49,4 +49,4 @@ def handle_speaker_auth(messaging_event, access_token, db_session):
         return messaging.send_duplicate_authentication_error(access_token, sender_id)
     speaker.page_scoped_id = sender_id
     db_session.commit()
-    return messaging.send_authentication_confirmation(access_token, user_id, speaker.name)
+    return messaging.send_authentication_confirmation(access_token, sender_id, speaker.name)
