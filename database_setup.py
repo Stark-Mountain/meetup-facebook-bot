@@ -23,13 +23,14 @@ for fake_facebook_id, json_talk in enumerate(json_talks):
         name=json_talk['speaker']['name'],
         token=json_talk['speaker']['token']
     )
+    session.add(fake_speaker)
+    session.commit()
     fake_talk = talk.Talk(
         title=json_talk['title'],
         description=json_talk['description'],
-        speaker_facebook_id=fake_speaker.facebook_id
+        speaker_id=fake_speaker.id
     )
-    session.add(fake_speaker)
     session.add(fake_talk)
+    session.commit()
 
-session.commit()
 print('DB created!')

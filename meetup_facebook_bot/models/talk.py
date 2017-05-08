@@ -11,7 +11,7 @@ class Talk(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(128), unique=True, nullable=False)
     description = Column(String(512))
-    speaker_facebook_id = Column(
+    speaker_id = Column(
         BIGINT,
         ForeignKey('speakers.id'),
         nullable=False
