@@ -99,6 +99,26 @@ def send_talk_info(access_token, user_id, talk):
     return send_message_to_facebook(access_token, user_id, more_info)
 
 
+def send_duplicate_authentication_error(access_token, user_id):
+    """ Send a simple Facebook message:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+    """
+    error_message_body = {
+        'text': 'Докладчик уже авторизован, повторно не получится.'
+    }
+    return send_message_to_facebook(access_token, user_id, error_message_body)
+
+
+def send_authentication_confirmation(access_token, user_id, speaker_name):
+    """ Send a simple Facebook message:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+    """
+    confirmation_message_body = {
+        'text': 'Вы зарегистрировались как докладчик %s.' % speaker_name
+    }
+    return send_message_to_facebook(access_token, user_id, confirmation_message_body)
+
+
 def send_message_to_facebook(access_token, user_id, message_data):
     headers = {
         'Content-Type': 'application/json',

@@ -49,18 +49,22 @@ class WebhookRouteTestCase(TestCase):
         }
         return self.generate_facebook_request('postback', message)
 
-    @patch('meetup_facebook_bot.messenger.message_handlers.messaging.send_schedule')
-    def test_schedule_command_handling(self, send_schedule_mock):
+    def generate_simple_text_message(self):
+        message = {
+            'text': 'Doesn\'t matter'
+        }
+        return self.generate_facebook_request('message', message)
+
+    @patch('meetup_facebook_bot.server.message_handlers')
+    def test_schedule_command_handling(self, message_handlers_mock):
+        message_handlers_mock.handle_speaker_auth = MagicMock()
         talks_mock = [MagicMock(talk_id=1), MagicMock(talk_id=2)]
         server.db_session.query().all = MagicMock(return_value=talks_mock)
         known_input = self.generate_quick_reply('schedule payload')
         self.app.post('/', data=json.dumps(known_input), content_type='application/json')
-        send_schedule_mock.assert_called_once_with(
-            self.access_token,
-            self.sender_id,
-            talks_mock,
-            server.db_session
-        )
+        number_of_calls = message_handlers_mock.handle_speaker_auth.call_count
+        self.assertEqual(number_of_calls, 1)
+
 
     @patch('meetup_facebook_bot.messenger.message_handlers.messaging.send_talk_info')
     def test_more_talk_info_command_handling(self, send_talk_info_mock):
@@ -85,3 +89,12 @@ class WebhookRouteTestCase(TestCase):
             self.sender_id,
             server.db_session
         )
+
+    @patch('meetup_facebook_bot.server.message_handlers')
+    def test_speaker_auth_gets_called(self, message_handlers_mock):
+        message_handlers_mock.handle_speaker_auth = MagicMock()
+        message_handlers_mock.handle_speaker_auth = MagicMock()
+        known_input = self.generate_simple_text_message()
+        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
+        number_of_calls = message_handlers_mock.handle_speaker_auth.call_count
+        self.assertEqual(number_of_calls, 1)
