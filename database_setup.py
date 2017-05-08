@@ -19,7 +19,10 @@ with open('meetup_facebook_bot/example_talks.json') as json_file:
     json_talks = json.load(json_file)
 
 for fake_facebook_id, json_talk in enumerate(json_talks):
-    fake_speaker = speaker.Speaker(facebook_id=fake_facebook_id, name=json_talk['speaker'])
+    fake_speaker = speaker.Speaker(
+        name=json_talk['speaker']['name'],
+        token=json_talk['speaker']['token']
+    )
     fake_talk = talk.Talk(
         title=json_talk['title'],
         description=json_talk['description'],

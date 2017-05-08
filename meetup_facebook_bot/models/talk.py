@@ -13,7 +13,7 @@ class Talk(Base):
     description = Column(String(512))
     speaker_facebook_id = Column(
         BIGINT,
-        ForeignKey('speakers.facebook_id'),
+        ForeignKey('speakers.id'),
         nullable=False
     )
 
