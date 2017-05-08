@@ -123,9 +123,9 @@ UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
 
 @task
-def prepare_machine():
+def prepare_machine(branch='master'):
     install_python()
-    fetch_sources_from_repo(REPOSITORY_URL, branch='master', code_directory=PROJECT_FOLDER)
+    fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
     venv_bin_directory = setup_venv(PROJECT_FOLDER)
     install_modules(PROJECT_FOLDER, venv_bin_directory)
 
