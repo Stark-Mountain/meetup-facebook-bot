@@ -13,8 +13,9 @@ def send_rate_menu(access_token, user_id, talk, db_session):
         rate_button_title = 'Убрать лайк'
     else:
         rate_button_title = 'Поставить лайк'
+    talk_title = talk.title
     rate_menu_message_body = {
-        'text': 'Как будем оценивать?',
+        'text': 'Как оценишь доклад? \n %s' % talk_title,
         'quick_replies': [
             {
                 'content_type': 'text',
@@ -32,10 +33,11 @@ def send_rate_menu(access_token, user_id, talk, db_session):
 
 
 def send_like_confirmation(access_token, user_id, talk, db_session):
+    talk_title = talk.title
     if talk.is_liked_by(user_id, db_session):
-        like_text_message = 'Поставил лайк'
+        like_text_message = 'Поставил лайк докладу:\n %s' % talk_title
     else:
-        like_text_message = 'Убрал лайк'
+        like_text_message = 'Убрал лайк c доклада:\n %s' % talk_title
     like_message_body = {
         "text": like_text_message
     }
@@ -49,7 +51,11 @@ def send_schedule(access_token, user_id, talks, db_session):
     elements = []
     for talk in talks:
         number_of_likes = talk.count_likes(db_session)
-        element_subtitle = 'Лайков: %d\nСпикер: %s' % (number_of_likes, talk.speaker.name)
+        if talk.is_liked_by(user_id, db_session):
+            like_text = 'Вы лайкнули этот доклад'
+        else:
+            like_text = 'Вы не оценили этот докад'
+        element_subtitle = '%s\nЛайков: %d\nСпикер: %s' % (like_text, number_of_likes, talk.speaker.name)
         element = {
             'title': talk.title,
             'subtitle': element_subtitle,
