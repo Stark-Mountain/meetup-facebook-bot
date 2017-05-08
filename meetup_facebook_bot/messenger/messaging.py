@@ -32,10 +32,11 @@ def send_rate_menu(access_token, user_id, talk, db_session):
 
 
 def send_like_confirmation(access_token, user_id, talk, db_session):
+    talk_title = talk.title
     if talk.is_liked_by(user_id, db_session):
-        like_text_message = 'Поставил лайк'
+        like_text_message = 'Поставил лайк докладу:\n %s' % talk_title
     else:
-        like_text_message = 'Убрал лайк'
+        like_text_message = 'Убрал лайк c доклада:\n %s' % talk_title
     like_message_body = {
         "text": like_text_message
     }
