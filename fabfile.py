@@ -121,6 +121,12 @@ UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
 @task
 def prepare_machine(branch='master'):
+    env.sudo_password = getpass('Initial value for env.sudo_password: ')
+    page_id = prompt('Enter PAGE_ID:'),
+    app_id = prompt('Enter APP_ID:'),
+    access_token = getpass('Enter the app ACCESS_TOKEN: ')
+    verify_token = getpass('Enter VERIFY_TOKEN: '),
+
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
     venv_bin_directory = setup_venv(PROJECT_FOLDER)
@@ -134,7 +140,6 @@ def prepare_machine(branch='master'):
     with settings(warn_only=True):
         sudo('mkdir %s' % permanent_project_folder)
     database_url = setup_postgres(username=env.user, database_name=env.user)
-    access_token = getpass('Enter the app ACCESS_TOKEN: ')
     socket_path = '/tmp/meetup-facebook-bot.socket'
     ini_file_path = os.path.join(permanent_project_folder, 'meetup-facebook-bot.ini')
     put_formatted_template_on_server(
@@ -142,9 +147,9 @@ def prepare_machine(branch='master'):
         destination_file_path=ini_file_path,
         database_url=database_url,
         access_token=access_token,
-        page_id=prompt('Enter PAGE_ID:'),
-        app_id=prompt('Enter APP_ID:'),
-        verify_token=getpass('Enter VERIFY_TOKEN: '),
+        page_id=page_id,
+        app_id=app_id,
+        verify_token=verify_token,
         socket_path=socket_path
     )
 
