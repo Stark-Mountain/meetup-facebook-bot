@@ -7,15 +7,20 @@ from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, 
 from fabric.contrib.console import confirm
 
 
+def exists_on_remote(path):
+    with settings(warn_only=True):
+        existence_check = run('test -e %s' % path)
+    return existence_check.succeeded
+
+
+
 def install_python():
     sudo('apt-get update')
     sudo('apt-get install python3-pip python3-dev python3-venv')
 
 
 def fetch_sources_from_repo(repository_url, branch, code_directory):
-    with settings(warn_only=True):
-        source_existence_check = run('test -d %s' % code_directory)
-    if source_existence_check.succeeded:
+    if exists_on_remote(code_directory):
         remove_repository_command = 'rm -rf %s' % code_directory
         if not confirm('Gonna run "%s". Continue?' % remove_repository_command):
             print('Skipping git clone.')
@@ -43,7 +48,6 @@ def install_modules(code_directory, venv_bin_directory):
 def install_nginx():
     sudo('apt-get update')
     sudo('apt-get install nginx')
-    run('echo "0 */12 * * * systemctl restart nginx" | sudo tee --append /etc/crontab')
 
 
 def install_postgres():
@@ -59,8 +63,8 @@ def setup_ufw():
 
 def setup_postgres(username, database_name):
     with settings(warn_only=True):
-        run('sudo -u postgres createuser %s -s' % username)
-        run('sudo -u postgres createdb %s' % database_name)
+        sudo('sudo -u postgres createuser %s -s' % username)
+        sudo('sudo -u postgres createdb %s' % database_name)
     return 'postgresql://%s@/%s' % (username, database_name)
 
 
@@ -75,9 +79,7 @@ def put_formatted_template_on_server(template, destination_file_path, **kwargs):
 
 
 def create_dhparam_if_necessary(dhparam_path):
-    with settings(warn_only=True):
-        dhparam_existence_check = run('test -f %s' % dhparam_path)
-    if dhparam_existence_check.succeeded:
+    if exists_on_remote(dhparam_path):
         print('dhparam file exists, skipping this step')
         return
     sudo('openssl dhparam -out %s 2048' % dhparam_path)
@@ -126,12 +128,12 @@ def prepare_machine(branch='master'):
     app_id = prompt('Enter APP_ID:'),
     access_token = getpass('Enter the app ACCESS_TOKEN: ')
     verify_token = getpass('Enter VERIFY_TOKEN: '),
+    domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
 
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
     venv_bin_directory = setup_venv(PROJECT_FOLDER)
     install_modules(PROJECT_FOLDER, venv_bin_directory)
-
     install_nginx()
     install_postgres()
     setup_ufw()
@@ -166,28 +168,42 @@ def prepare_machine(branch='master'):
     dhparam_path = '/etc/ssl/certs/dhparam.pem'
     create_dhparam_if_necessary(dhparam_path)
     ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
-    put_formatted_template_on_server(
-        template=load_text_from_file('deploy_configs/ssl_params'),
-        destination_file_path=ssl_params_path,
-        dhparam_path=dhparam_path
-    )
-    configure_letsencrypt()
-    letsnecrypt_folder = prompt('What\'s your letsencrypt directory? '
-                                '(e.g. /etc/letsencrypt/live/example.com, see above)')
-    print('Got it, it\'s %s' % letsnecrypt_folder)
+    if exists_on_remote(ssl_params_path):
+        print('Not creating ssl-params.conf, already exists')
+    else:
+        put_formatted_template_on_server(
+            template=load_text_from_file('deploy_configs/ssl_params'),
+            destination_file_path=ssl_params_path,
+            dhparam_path=dhparam_path
+        )
 
-    domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
     nginx_config_path = os.path.join('/etc/nginx/sites-available', domain_name)
-    put_formatted_template_on_server(
-        template=load_text_from_file('deploy_configs/nginx_config'),
-        destination_file_path=nginx_config_path,
-        source_dir=PROJECT_FOLDER,
-        domain=domain_name,
-        ssl_params_path=ssl_params_path,
-        fullchain_path=os.path.join(letsnecrypt_folder, 'fullchain.pem'),
-        privkey_path=os.path.join(letsnecrypt_folder, 'privkey.pem'),
-        socket_path=socket_path
-    )
+    nginx_installed = exists_on_remote(nginx_config_path)
+    if nginx_installed:
+        print('nginx config found, skipping letsencrypt setup')
+    else:
+        configure_letsencrypt()
+        letsnecrypt_folder = os.path.join('/etc/letsencrypt/live', domain_name)
+        print('Assuming letsencrypt folder is %s' % letsnecrypt_folder)
+    if nginx_installed:
+        print('nginx config found, won\'t add restart job to crontab')
+    else:
+        # needed for successful ssl certificate renewal
+        sudo('echo "0 */12 * * * systemctl restart nginx" | sudo tee --append /etc/crontab')
+
+    if nginx_installed:
+        print('nginx config found, not creating another one')
+    else:
+        put_formatted_template_on_server(
+            template=load_text_from_file('deploy_configs/nginx_config'),
+            destination_file_path=nginx_config_path,
+            source_dir=PROJECT_FOLDER,
+            domain=domain_name,
+            ssl_params_path=ssl_params_path,
+            fullchain_path=os.path.join(letsnecrypt_folder, 'fullchain.pem'),
+            privkey_path=os.path.join(letsnecrypt_folder, 'privkey.pem'),
+            socket_path=socket_path
+        )
     nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', domain_name)
     sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
 
