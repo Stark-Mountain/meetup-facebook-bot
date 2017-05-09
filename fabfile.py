@@ -6,6 +6,8 @@ from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, 
         local, abort
 from fabric.contrib.console import confirm
 
+env.hosts = ['vergeev@meetup-bot.me']
+
 
 def exists_on_remote(path):
     with settings(warn_only=True):
