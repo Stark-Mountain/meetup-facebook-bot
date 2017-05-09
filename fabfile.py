@@ -56,7 +56,7 @@ def install_postgres():
 def setup_ufw():
     sudo('ufw allow "Nginx Full"')
     sudo('ufw allow OpenSSH')
-    sudo('ufw enable')
+    sudo('echo "y" | ufw enable')
 
 
 def setup_postgres(username, database_name):
