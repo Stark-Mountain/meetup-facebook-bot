@@ -106,9 +106,6 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
     environ_params = {
         'ACCESS_TOKEN': access_token,
         'DATABASE_URL': database_url,
-        'PAGE_ID': '1',  # this and the following are needed just to avoid syntax errors
-        'APP_ID': '1',
-        'VERIFY_TOKEN': '1',
     }
     venv_activate_path = os.path.join(venv_bin_directory, 'activate')
     venv_activate_command = 'source %s' % venv_activate_path
