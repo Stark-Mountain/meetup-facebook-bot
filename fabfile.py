@@ -21,10 +21,8 @@ def install_python():
 
 def fetch_sources_from_repo(repository_url, branch, code_directory):
     if exists_on_remote(code_directory):
+        print('Removing the following directory: %s' % code_directory)
         remove_repository_command = 'rm -rf %s' % code_directory
-        if not confirm('Gonna run "%s". Continue?' % remove_repository_command):
-            print('Skipping git clone.')
-            return
         sudo(remove_repository_command)
     git_clone_command = 'git clone {1} {2} --branch {0} --single-branch'
     sudo(git_clone_command.format(branch, repository_url, code_directory))
