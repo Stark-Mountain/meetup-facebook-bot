@@ -1,6 +1,8 @@
 import os.path
 from getpass import getpass
 from io import BytesIO
+from distutils.util import strtobool
+
 
 from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
         local, abort
@@ -30,11 +32,12 @@ def fetch_sources_from_repo(repository_url, branch, code_directory):
     sudo(git_clone_command.format(branch, repository_url, code_directory))
 
 
-def setup_venv(code_directory):
+def reinstall_venv(venv_directory):
     venv_folder = 'venv'
-    with cd(code_directory):
+    with cd(venv_directory):
+        sudo('rm -rf %s' % venv_folder)
         sudo('python3 -m venv %s' % venv_folder)
-    return os.path.join(code_directory, venv_folder, 'bin')
+    return os.path.join(venv_directory, venv_folder, 'bin')
 
 
 def install_modules(code_directory, venv_bin_directory):
@@ -119,6 +122,7 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
 
 
 PROJECT_FOLDER = '/var/www/meetup-facebook-bot'  # must not end with '/'
+PERMANENT_PROJECT_FOLDER = "%s.permanent" % PROJECT_FOLDER
 REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
 UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
@@ -134,18 +138,17 @@ def prepare_machine(branch='master'):
 
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
-    venv_bin_directory = setup_venv(PROJECT_FOLDER)
+    venv_bin_directory = reinstall_venv(PERMANENT_PROJECT_FOLDER)
     install_modules(PROJECT_FOLDER, venv_bin_directory)
     install_nginx()
     install_postgres()
     setup_ufw()
 
-    permanent_project_folder = "%s.permanent" % PROJECT_FOLDER
     with settings(warn_only=True):
-        sudo('mkdir %s' % permanent_project_folder)
+        sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
     database_url = setup_postgres(username=env.user, database_name=env.user)
     socket_path = '/tmp/meetup-facebook-bot.socket'
-    ini_file_path = os.path.join(permanent_project_folder, 'meetup-facebook-bot.ini')
+    ini_file_path = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
     put_formatted_template_on_server(
         template=load_text_from_file('deploy_configs/meetup-facebook-bot.ini'),
         destination_file_path=ini_file_path,
@@ -215,10 +218,11 @@ def prepare_machine(branch='master'):
 
 
 @task
-def deploy(branch='master'):
+def deploy(branch='master', update_dependencies='True'):
     fetch_sources_from_repo(REPOSITORY_URL, branch, PROJECT_FOLDER)
-    venv_bin_path = setup_venv(PROJECT_FOLDER)
-    install_modules(PROJECT_FOLDER, venv_bin_path)
+    if bool(strtobool(update_dependencies)):
+        venv_bin_path = reinstall_venv(PERMANENT_PROJECT_FOLDER)
+        install_modules(PROJECT_FOLDER, venv_bin_path)
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
 
