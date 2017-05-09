@@ -97,10 +97,12 @@ def configure_letsencrypt():
 
 def start_uwsgi(uwsgi_service_name):
     sudo('systemctl daemon-reload')
+    sudo('systemctl enable %s' % uwsgi_service_name)
     sudo('systemctl restart %s' % uwsgi_service_name)
 
 
 def start_nginx():
+    sudo('systemctl enable nginx')
     sudo('systemctl restart nginx')
 
 
