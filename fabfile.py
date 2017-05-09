@@ -219,6 +219,7 @@ def prepare_machine(branch='master'):
 
 @task
 def deploy(branch='master', update_dependencies='True'):
+    env.sudo_password = getpass('Initial value for env.sudo_password: ')
     fetch_sources_from_repo(REPOSITORY_URL, branch, PROJECT_FOLDER)
     if bool(strtobool(update_dependencies)):
         venv_bin_path = reinstall_venv(PERMANENT_PROJECT_FOLDER)
@@ -233,6 +234,7 @@ def print_service_status(service_name):
 
 @task
 def show_status():
+    env.sudo_password = getpass('Initial value for env.sudo_password: ')
     print_service_status(UWSGI_SERVICE_NAME)
 
 
