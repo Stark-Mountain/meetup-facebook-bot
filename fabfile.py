@@ -133,6 +133,9 @@ def prepare_machine(branch='master'):
     verify_token = getpass('Enter VERIFY_TOKEN: '),
     domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
 
+    with settings(warn_only=True):
+        sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
+
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
     venv_bin_directory = reinstall_venv(PERMANENT_PROJECT_FOLDER)
@@ -141,8 +144,6 @@ def prepare_machine(branch='master'):
     install_postgres()
     setup_ufw()
 
-    with settings(warn_only=True):
-        sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
     database_url = setup_postgres(username=env.user, database_name=env.user)
     socket_path = '/tmp/meetup-facebook-bot.socket'
     ini_file_path = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
