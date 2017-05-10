@@ -71,7 +71,11 @@ def send_schedule(access_token, user_id, talks, db_session):
             like_text = 'Вы лайкнули этот доклад'
         else:
             like_text = 'Вы не оценили этот докад'
-        element_subtitle = '%s\nЛайков: %d\nСпикер: %s' % (like_text, number_of_likes, talk.speaker.name)
+        element_subtitle = '{like_text}\nЛайков: {number_of_likes}\nСпикер: {name}'.format(
+            like_text=like_text,
+            number_of_likes=number_of_likes,
+            name=talk.speaker.name
+        )
         ask_question_button = generate_ask_question_button(talk.ask_question_url)
         element = {
             'title': talk.title,
