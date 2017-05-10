@@ -44,6 +44,22 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
     return send_message_to_facebook(access_token, user_id, like_message_body)
 
 
+def generate_ask_question_button(ask_question_url):
+    if ask_question_url is None:
+        ask_question_button = {
+            'type': 'postback',
+            'title': 'Задать вопрос',
+            'payload': 'ask question no url'
+        }
+    else:
+        ask_question_button = {
+            'type': 'web_url',
+            'url': ask_question_url,
+            'title': 'Задать вопрос',
+        }
+    return ask_question_button
+
+
 def send_schedule(access_token, user_id, talks, db_session):
     """ Makes use of Generic Template:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
@@ -56,6 +72,7 @@ def send_schedule(access_token, user_id, talks, db_session):
         else:
             like_text = 'Вы не оценили этот докад'
         element_subtitle = '%s\nЛайков: %d\nСпикер: %s' % (like_text, number_of_likes, talk.speaker.name)
+        ask_question_button = generate_ask_question_button(talk.ask_question_url)
         element = {
             'title': talk.title,
             'subtitle': element_subtitle,
@@ -70,11 +87,7 @@ def send_schedule(access_token, user_id, talks, db_session):
                     'title': 'Оценить',
                     'payload': 'rate talk %d' % talk.id
                 },
-                {
-                    'type': 'web_url',
-                    'url': talk.ask_question_url,
-                    'title': 'Задать вопрос',
-                }
+                ask_question_button
             ]
         }
         elements.append(element)
@@ -123,6 +136,16 @@ def send_authentication_confirmation(access_token, user_id, speaker_name):
         'text': 'Вы зарегистрировались как докладчик %s.' % speaker_name
     }
     return send_message_to_facebook(access_token, user_id, confirmation_message_body)
+
+
+def send_no_ask_question_url_warning(access_token, sender_id):
+    """ Send a simple Facebook message:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
+    """
+    warning_message_body = {
+        'text': 'Я не знаю, куда отправлять вопрос.'
+    }
+    return send_message_to_facebook(access_token, sender_id, warning_message_body)
 
 
 def send_message_to_facebook(access_token, user_id, message_data):

@@ -14,6 +14,7 @@ class MessagingTestCase(TestCase):
             talk_mock = MagicMock(id=talk_id, title=mock_talk_title, speaker_facebook_id=1)
             talk_mock.count_likes = MagicMock(return_value=0)
             talk_mock.is_liked_by = MagicMock(return_value=False)
+            talk_mock.ask_question_url = None
             talk_mocks.append(talk_mock)
         return talk_mocks
 

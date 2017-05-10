@@ -30,6 +30,12 @@ def is_talk_like_command(messaging_event):
     return 'like talk' in messaging_event['message']['quick_reply']['payload']
 
 
+def is_no_ask_question_url_postback(messaging_event):
+    if 'postback' not in messaging_event:
+        return False
+    return 'ask question no url' in messaging_event['postback']['payload']
+
+
 def is_message_with_text(messaging_event):
     if 'message' not in messaging_event:
         return False

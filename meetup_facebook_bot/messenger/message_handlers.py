@@ -31,6 +31,11 @@ def handle_talk_like_command(messaging_event, access_token, db_session):
     return messaging.send_like_confirmation(access_token, sender_id, talk, db_session)
 
 
+def handle_no_ask_question_url_postback(messaging_event, access_token, db_session):
+    sender_id = messaging_event['sender']['id']
+    return messaging.send_no_ask_question_url_warning(access_token, sender_id)
+
+
 def handle_message_with_sender_id(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     talks = db_session.query(Talk).all()
