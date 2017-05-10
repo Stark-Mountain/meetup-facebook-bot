@@ -3,7 +3,6 @@ from getpass import getpass
 from io import BytesIO
 from distutils.util import strtobool
 
-
 from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
         local, abort
 from fabric.contrib.console import confirm
@@ -17,7 +16,6 @@ def exists_on_remote(path):
     return existence_check.succeeded
 
 
-
 def install_python():
     sudo('apt-get update')
     sudo('apt-get install python3-pip python3-dev python3-venv')
@@ -26,8 +24,7 @@ def install_python():
 def fetch_sources_from_repo(repository_url, branch, code_directory):
     if exists_on_remote(code_directory):
         print('Removing the following directory: %s' % code_directory)
-        remove_repository_command = 'rm -rf %s' % code_directory
-        sudo(remove_repository_command)
+        sudo('rm -rf %s' % code_directory)
     git_clone_command = 'git clone {1} {2} --branch {0} --single-branch'
     sudo(git_clone_command.format(branch, repository_url, code_directory))
 
@@ -190,6 +187,7 @@ def prepare_machine(branch='master'):
         configure_letsencrypt()
         letsnecrypt_folder = os.path.join('/etc/letsencrypt/live', domain_name)
         print('Assuming letsencrypt folder is %s' % letsnecrypt_folder)
+
     if nginx_installed:
         print('nginx config found, won\'t add restart job to crontab')
     else:
