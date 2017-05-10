@@ -1,7 +1,6 @@
 import os.path
 from getpass import getpass
 from io import BytesIO
-from distutils.util import strtobool
 
 from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
         local, abort
@@ -216,10 +215,12 @@ def prepare_machine(branch='master'):
 
 
 @task
-def deploy(branch='master', update_dependencies='True'):
+def deploy(branch='master'):
+    update_dependencies = confirm('Update dependencies?')
+    print('OK, deploying branch %s' % branch)
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     fetch_sources_from_repo(REPOSITORY_URL, branch, PROJECT_FOLDER)
-    if bool(strtobool(update_dependencies)):
+    if update_dependencies:
         venv_bin_path = reinstall_venv(PERMANENT_PROJECT_FOLDER)
         install_modules(PROJECT_FOLDER, venv_bin_path)
     start_uwsgi(UWSGI_SERVICE_NAME)
