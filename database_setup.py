@@ -28,7 +28,8 @@ for fake_facebook_id, json_talk in enumerate(json_talks):
     fake_talk = talk.Talk(
         title=json_talk['title'],
         description=json_talk['description'],
-        speaker_id=fake_speaker.id
+        speaker_id=fake_speaker.id,
+        ask_question_url=json_talk.get('ask_question_url')
     )
     session.add(fake_talk)
     session.commit()

@@ -11,6 +11,7 @@ class Talk(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(128), unique=True, nullable=False)
     description = Column(String(512))
+    ask_question_url = Column(String(256))
     speaker_id = Column(
         BIGINT,
         ForeignKey('speakers.id'),

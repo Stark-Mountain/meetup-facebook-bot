@@ -71,9 +71,9 @@ def send_schedule(access_token, user_id, talks, db_session):
                     'payload': 'rate talk %d' % talk.id
                 },
                 {
-                    'type': 'postback',
+                    'type': 'web_url',
+                    'url': talk.ask_question_url,
                     'title': 'Задать вопрос',
-                    'payload': 'ask talk %d' % talk.id
                 }
             ]
         }
