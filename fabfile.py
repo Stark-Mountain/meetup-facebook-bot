@@ -9,6 +9,11 @@ from fabric.contrib.console import confirm
 
 env.hosts = ['vergeev@meetup-bot.me']
 
+PROJECT_FOLDER = '/var/www/meetup-facebook-bot'  # must not end with '/'
+PERMANENT_PROJECT_FOLDER = "%s.permanent" % PROJECT_FOLDER
+REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
+UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
+
 
 def exists_on_remote(path):
     with settings(warn_only=True):
@@ -116,12 +121,6 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
     with cd(code_directory), shell_env(**environ_params), prefix(venv_activate_command):
         run('python3 %s/database_setup.py' % code_directory)
         run('python3 %s/set_start_button.py' % code_directory)
-
-
-PROJECT_FOLDER = '/var/www/meetup-facebook-bot'  # must not end with '/'
-PERMANENT_PROJECT_FOLDER = "%s.permanent" % PROJECT_FOLDER
-REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
-UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
 
 @task
