@@ -125,12 +125,14 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
 @task
 def prepare_machine(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
-    page_id = prompt('Enter PAGE_ID:'),
-    app_id = prompt('Enter APP_ID:'),
-    access_token = getpass('Enter the app ACCESS_TOKEN: ')
-    verify_token = getpass('Enter VERIFY_TOKEN: '),
-    secret_key = getpass('Enter SECRET_KEY: '),
     domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
+    page_id = prompt('Enter PAGE_ID:')
+    app_id = prompt('Enter APP_ID:')
+    access_token = getpass('Enter the app ACCESS_TOKEN: ')
+    verify_token = getpass('Enter VERIFY_TOKEN: ')
+    secret_key = getpass('Enter SECRET_KEY: '),
+    admin_login = getpass('Enter ADMIN_LOGIN: ')
+    admin_password = getpass('Enter ADMIN_PASSWORD: ')
 
     with settings(warn_only=True):
         sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
@@ -155,7 +157,9 @@ def prepare_machine(branch='master'):
         app_id=app_id,
         verify_token=verify_token,
         socket_path=socket_path,
-        secret_key=secret_key
+        secret_key=secret_key,
+        admin_login=admin_login,
+        admin_password=admin_password
     )
 
     put_formatted_template_on_server(

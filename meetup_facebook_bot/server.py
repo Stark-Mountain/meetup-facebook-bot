@@ -37,11 +37,10 @@ class LoginForm(Form):
         Form.__init__(self, *args, **kwargs)
         self.user = None
 
-    def validate(self):
-        if self.login.data != os.environ['login'] or self.passkey.data != os.environ['passkey']:
+    def validate(self, admin_login, admin_password):
+        if self.login.data != admin_login or self.passkey.data != admin_password:
             time.sleep(random.random(0,30))
             return False
-
         return True
 
 
@@ -63,7 +62,9 @@ def is_facebook_challenge_request(request):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate():
+    login = app.config['ADMIN_LOGIN']
+    password = app.config['ADMIN_PASSWORD']
+    if form.validate(login, password):
         session['logged'] = True
         flash('Successfully logged in')
         return redirect(url_for('admin.index'))
