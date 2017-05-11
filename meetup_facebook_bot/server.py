@@ -63,7 +63,7 @@ def is_facebook_challenge_request(request):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate:
+    if form.validate():
         session['logged'] = True
         flash('Successfully logged in')
         return redirect(url_for('admin.index'))
