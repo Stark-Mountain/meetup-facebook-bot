@@ -45,4 +45,6 @@ def is_message_with_text(messaging_event):
 
 
 def has_sender_id(messaging_event):
+    if is_talk_rate_command(messaging_event):
+        return False
     return 'sender' in messaging_event and 'id' in messaging_event['sender']
