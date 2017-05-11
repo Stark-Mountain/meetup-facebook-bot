@@ -129,6 +129,7 @@ def prepare_machine(branch='master'):
     app_id = prompt('Enter APP_ID:'),
     access_token = getpass('Enter the app ACCESS_TOKEN: ')
     verify_token = getpass('Enter VERIFY_TOKEN: '),
+    secret_key = getpass('Enter SECRET_KEY: '),
     domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
 
     with settings(warn_only=True):
@@ -153,7 +154,8 @@ def prepare_machine(branch='master'):
         page_id=page_id,
         app_id=app_id,
         verify_token=verify_token,
-        socket_path=socket_path
+        socket_path=socket_path,
+        secret_key=secret_key
     )
 
     put_formatted_template_on_server(
