@@ -39,7 +39,7 @@ class LoginForm(Form):
 
     def validate(self, admin_login, admin_password):
         if self.login.data != admin_login or self.passkey.data != admin_password:
-            time.sleep(random.random(0,30))
+            time.sleep(random.uniform(1, 2.2))
             return False
         return True
 
