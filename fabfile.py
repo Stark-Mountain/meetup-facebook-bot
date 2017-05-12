@@ -2,7 +2,7 @@ import os.path
 from getpass import getpass
 from collections import OrderedDict
 
-from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env, abort
+from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template, contains
 
@@ -86,16 +86,16 @@ def start_systemctl_service(service_name):
     sudo('systemctl restart %s' % service_name)
 
 
-def run_setup_scripts(access_token, database_url, venv_bin_directory, code_directory):
+def run_setup_scripts(access_token, database_url):
     environ_params = {
         'ACCESS_TOKEN': access_token,
         'DATABASE_URL': database_url,
     }
-    venv_activate_path = os.path.join(venv_bin_directory, 'activate')
+    venv_activate_path = os.path.join(VENV_BIN_DIRECTORY, 'activate')
     venv_activate_command = 'source %s' % venv_activate_path
-    with cd(code_directory), shell_env(**environ_params), prefix(venv_activate_command):
-        run('python3 %s/database_setup.py' % code_directory)
-        run('python3 %s/set_start_button.py' % code_directory)
+    with cd(PROJECT_FOLDER), shell_env(**environ_params), prefix(venv_activate_command):
+        run('python3 %s/database_setup.py' % PROJECT_FOLDER)
+        run('python3 %s/set_start_button.py' % PROJECT_FOLDER)
 
 
 def prompt_for_environment_variables(env_vars):
@@ -237,7 +237,7 @@ def bootstrap(branch='master'):
     start_systemctl_service('nginx')
     access_token = env.env_vars['ACCESS_TOKEN']
     database_url = env.env_vars['DATABASE_URL']
-    run_setup_scripts(access_token, database_url, VENV_BIN_DIRECTORY, PROJECT_FOLDER)
+    run_setup_scripts(access_token, database_url)
 
 
 @task
