@@ -40,9 +40,9 @@ def reinstall_venv():
         sudo('python3 -m venv %s' % VENV_FOLDER)
 
 
-def install_modules(code_directory, venv_bin_directory):
-    requirements_path = os.path.join(code_directory, 'requirements.txt')
-    venv_activate_path = os.path.join(venv_bin_directory, 'activate')
+def install_modules():
+    requirements_path = os.path.join(PROJECT_FOLDER, 'requirements.txt')
+    venv_activate_path = os.path.join(VENV_BIN_DIRECTORY, 'activate')
     with prefix('source %s' % venv_activate_path):
         sudo('pip install wheel')
         sudo('pip install -r %s' % requirements_path)
@@ -233,7 +233,7 @@ def bootstrap(branch='master'):
     install_python()
     fetch_sources_from_repo(branch, PROJECT_FOLDER)
     reinstall_venv()
-    install_modules(PROJECT_FOLDER, VENV_BIN_DIRECTORY)
+    install_modules()
     install_nginx()
     configure_letsencrypt_if_necessary()
     add_nginx_reload_crontab_job()
@@ -253,8 +253,8 @@ def deploy(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     fetch_sources_from_repo(branch, PROJECT_FOLDER)
     if update_dependencies:
-        venv_bin_path = reinstall_venv(PERMANENT_PROJECT_FOLDER)
-        install_modules(PROJECT_FOLDER, venv_bin_path)
+        reinstall_venv()
+        install_modules()
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
 
