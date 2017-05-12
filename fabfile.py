@@ -17,6 +17,8 @@ SOCKET_PATH = '/tmp/meetup-facebook-bot.socket'
 INI_FILE_PATH = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
 VENV_FOLDER = 'venv'
 VENV_BIN_DIRECTORY = os.path.join(PERMANENT_PROJECT_FOLDER, VENV_FOLDER, 'bin')
+DHPARAM_PATH = '/etc/ssl/certs/dhparam.pem'
+SSL_PARAMS_PATH = '/etc/nginx/snippets/ssl-params.conf'
 
 
 def install_python():
@@ -69,14 +71,7 @@ def setup_postgres(username, database_name):
     return 'postgresql://%s@/%s' % (username, database_name)
 
 
-def create_dhparam_if_necessary(dhparam_path):
-    if exists(dhparam_path):
-        print('dhparam file exists, skipping this step')
-        return
-    sudo('openssl dhparam -out %s 2048' % dhparam_path)
-
-
-def configure_letsencrypt():
+def start_letsencrypt_setup():
     sudo("mkdir -p /tmp/git")
     sudo("rm -rf /tmp/git/letsencrypt")
     with cd("/tmp/git"):
@@ -164,10 +159,40 @@ def create_service_file():
     )
 
 
+def create_dhparam_if_necessary():
+    if exists(DHPARAM_PATH):
+        print('dhparam file exists, skipping this step')
+        return
+    sudo('openssl dhparam -out %s 2048' % DHPARAM_PATH)
+
+
+def create_ssl_params_if_necessary():
+    create_dhparam_if_necessary()
+    if exists(SSL_PARAMS_PATH):
+        print('Not creating ssl-params.conf, already exists')
+        return
+    upload_template(
+        filename='deploy_configs/ssl_params',
+        destination=SSL_PARAMS_PATH,
+        context={'dhparam_path': DHPARAM_PATH},
+        use_sudo=True
+    )
+
+
+def configure_letsencrypt_if_necessary():
+    create_ssl_params_if_necessary()
+    env.letsencrypt_folder = os.path.join('/etc/letsencrypt/live', env.domain_name)
+    print('Assuming letsencrypt folder is %s' % env.letsencrypt_folder)
+    if exists(env.letsencrypt_folder):
+        print('letsencrypt folder found, skipping letsencrypt setup')
+        return
+    start_letsencrypt_setup()
+
+
 @task
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
-    domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
+    env.domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
 
     create_permanent_folder()
     install_postgres()
@@ -181,27 +206,10 @@ def bootstrap(branch='master'):
     install_nginx()
     setup_ufw()
 
-    dhparam_path = '/etc/ssl/certs/dhparam.pem'
-    create_dhparam_if_necessary(dhparam_path)
-    ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
-    if exists(ssl_params_path):
-        print('Not creating ssl-params.conf, already exists')
-    else:
-        upload_template(
-            filename='deploy_configs/ssl_params',
-            destination=ssl_params_path,
-            context={'dhparam_path': dhparam_path},
-            use_sudo=True
-        )
+    configure_letsencrypt_if_necessary()
 
-    nginx_config_path = os.path.join('/etc/nginx/sites-available', domain_name)
+    nginx_config_path = os.path.join('/etc/nginx/sites-available', env.domain_name)
     nginx_installed = exists(nginx_config_path)
-    if nginx_installed:
-        print('nginx config found, skipping letsencrypt setup')
-    else:
-        configure_letsencrypt()
-        letsnecrypt_folder = os.path.join('/etc/letsencrypt/live', domain_name)
-        print('Assuming letsencrypt folder is %s' % letsnecrypt_folder)
 
     if nginx_installed:
         print('nginx config found, won\'t add restart job to crontab')
@@ -214,10 +222,10 @@ def bootstrap(branch='master'):
     else:
         nginx_config_variables = {
             'source_dir': PROJECT_FOLDER,
-            'domain': domain_name,
-            'ssl_params_path': ssl_params_path,
-            'fullchain_path': os.path.join(letsnecrypt_folder, 'fullchain.pem'),
-            'privkey_path': os.path.join(letsnecrypt_folder, 'privkey.pem'),
+            'domain': env.domain_name,
+            'ssl_params_path': SSL_PARAMS_PATH,
+            'fullchain_path': os.path.join(env.letsencrypt_folder, 'fullchain.pem'),
+            'privkey_path': os.path.join(env.letsencrypt_folder, 'privkey.pem'),
             'socket_path': SOCKET_PATH
         }
         upload_template(
@@ -226,7 +234,7 @@ def bootstrap(branch='master'):
             context=nginx_config_variables,
             use_sudo=True
         )
-    nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', domain_name)
+    nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', env.domain_name)
     sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
 
     start_uwsgi(UWSGI_SERVICE_NAME)
