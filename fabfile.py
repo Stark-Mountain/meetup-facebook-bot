@@ -2,8 +2,7 @@ import os.path
 from getpass import getpass
 from collections import OrderedDict
 
-from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env,\
-        local, abort
+from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env, abort
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists, upload_template, contains
 
@@ -81,15 +80,10 @@ def start_letsencrypt_setup():
     sudo('rm -rf /tmp/git')
 
 
-def start_uwsgi(uwsgi_service_name):
+def start_systemctl_service(service_name):
     sudo('systemctl daemon-reload')
-    sudo('systemctl enable %s' % uwsgi_service_name)
-    sudo('systemctl restart %s' % uwsgi_service_name)
-
-
-def start_nginx():
-    sudo('systemctl enable nginx')
-    sudo('systemctl restart nginx')
+    sudo('systemctl enable %s' % service_name)
+    sudo('systemctl restart %s' % service_name)
 
 
 def run_setup_scripts(access_token, database_url, venv_bin_directory, code_directory):
@@ -239,8 +233,8 @@ def bootstrap(branch='master'):
     add_nginx_reload_crontab_job()
     configure_nginx_if_necessary()
     setup_ufw()
-    start_uwsgi(UWSGI_SERVICE_NAME)
-    start_nginx()
+    start_systemctl_service(UWSGI_SERVICE_NAME)
+    start_systemctl_service('nginx')
     access_token = env.env_vars['ACCESS_TOKEN']
     database_url = env.env_vars['DATABASE_URL']
     run_setup_scripts(access_token, database_url, VENV_BIN_DIRECTORY, PROJECT_FOLDER)
@@ -255,8 +249,8 @@ def deploy(branch='master'):
     if update_dependencies:
         reinstall_venv()
         install_modules()
-    start_uwsgi(UWSGI_SERVICE_NAME)
-    start_nginx()
+    start_systemctl_service(UWSGI_SERVICE_NAME)
+    start_systemctl_service('nginx')
 
 
 @task
