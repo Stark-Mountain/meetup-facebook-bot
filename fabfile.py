@@ -5,7 +5,7 @@ from collections import OrderedDict
 from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env,\
         local, abort
 from fabric.contrib.console import confirm
-from fabric.contrib.files import exists, upload_template
+from fabric.contrib.files import exists, upload_template, contains
 
 env.hosts = ['vergeev@meetup-bot.me']
 
@@ -189,6 +189,16 @@ def configure_letsencrypt_if_necessary():
     start_letsencrypt_setup()
 
 
+def add_nginx_reload_crontab_job():
+    # needed for successful ssl certificate renewal
+    job = '0 */12 * * * systemctl restart nginx'
+    restart_command = 'echo "%s" | sudo tee --append /etc/crontab' % job
+    if contains('/etc/crontab', restart_command, exact=True, use_sudo=True):
+        print('already added restart job to crontab, won\'t add again')
+    else:
+        sudo(restart_command)
+
+
 @task
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
@@ -207,15 +217,11 @@ def bootstrap(branch='master'):
     setup_ufw()
 
     configure_letsencrypt_if_necessary()
+    add_nginx_reload_crontab_job()
 
     nginx_config_path = os.path.join('/etc/nginx/sites-available', env.domain_name)
     nginx_installed = exists(nginx_config_path)
 
-    if nginx_installed:
-        print('nginx config found, won\'t add restart job to crontab')
-    else:
-        # needed for successful ssl certificate renewal
-        sudo('echo "0 */12 * * * systemctl restart nginx" | sudo tee --append /etc/crontab')
 
     if nginx_installed:
         print('nginx config found, not creating another one')
