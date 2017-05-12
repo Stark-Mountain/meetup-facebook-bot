@@ -15,6 +15,8 @@ REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
 UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 SOCKET_PATH = '/tmp/meetup-facebook-bot.socket'
 INI_FILE_PATH = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
+VENV_FOLDER = 'venv'
+VENV_BIN_DIRECTORY = os.path.join(PERMANENT_PROJECT_FOLDER, VENV_FOLDER, 'bin')
 
 
 def install_python():
@@ -30,12 +32,10 @@ def fetch_sources_from_repo(repository_url, branch, code_directory):
     sudo(git_clone_command.format(branch, repository_url, code_directory))
 
 
-def reinstall_venv(venv_directory):
-    venv_folder = 'venv'
-    with cd(venv_directory):
-        sudo('rm -rf %s' % venv_folder)
-        sudo('python3 -m venv %s' % venv_folder)
-    return os.path.join(venv_directory, venv_folder, 'bin')
+def reinstall_venv():
+    with cd(PERMANENT_PROJECT_FOLDER):
+        sudo('rm -rf %s' % VENV_FOLDER)
+        sudo('python3 -m venv %s' % VENV_FOLDER)
 
 
 def install_modules(code_directory, venv_bin_directory):
@@ -160,17 +160,16 @@ def bootstrap(branch='master'):
 
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
-    venv_bin_directory = reinstall_venv(PERMANENT_PROJECT_FOLDER)
-    install_modules(PROJECT_FOLDER, venv_bin_directory)
+    reinstall_venv()
+    install_modules(PROJECT_FOLDER, VENV_BIN_DIRECTORY)
     install_nginx()
     setup_ufw()
-
 
     service_file_config = {
         'user': env.user,
         'work_dir': PROJECT_FOLDER,
-        'env_bin_dir': venv_bin_directory,
-        'uwsgi_path': os.path.join(venv_bin_directory, 'uwsgi'),
+        'env_bin_dir': VENV_BIN_DIRECTORY,
+        'uwsgi_path': os.path.join(VENV_BIN_DIRECTORY, 'uwsgi'),
         'app_ini_path': INI_FILE_PATH
     }
     upload_template(
@@ -232,7 +231,7 @@ def bootstrap(branch='master'):
     start_nginx()
     access_token = env.env_vars['ACCESS_TOKEN']
     database_url = env.env_vars['DATABASE_URL']
-    run_setup_scripts(access_token, database_url, venv_bin_directory, PROJECT_FOLDER)
+    run_setup_scripts(access_token, database_url, VENV_BIN_DIRECTORY, PROJECT_FOLDER)
 
 
 @task
