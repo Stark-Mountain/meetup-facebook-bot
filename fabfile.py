@@ -187,10 +187,10 @@ def add_nginx_reload_crontab_job():
     # needed for successful ssl certificate renewal
     job = '0 */12 * * * systemctl restart nginx'
     restart_command = 'echo "%s" | sudo tee --append /etc/crontab' % job
-    if contains('/etc/crontab', restart_command, exact=True, use_sudo=True):
+    if contains('/etc/crontab', job, use_sudo=True):
         print('already added restart job to crontab, won\'t add again')
-    else:
-        sudo(restart_command)
+        return
+    sudo(restart_command)
 
 
 def configure_nginx_if_necessary():
