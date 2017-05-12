@@ -5,6 +5,7 @@ from io import BytesIO
 from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
         local, abort
 from fabric.contrib.console import confirm
+from fabric.contrib.files import exists
 
 env.hosts = ['vergeev@meetup-bot.me']
 
@@ -14,19 +15,13 @@ REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
 UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
 
 
-def exists_on_remote(path):
-    with settings(warn_only=True):
-        existence_check = run('test -e %s' % path)
-    return existence_check.succeeded
-
-
 def install_python():
     sudo('apt-get update')
     sudo('apt-get install python3-pip python3-dev python3-venv')
 
 
 def fetch_sources_from_repo(repository_url, branch, code_directory):
-    if exists_on_remote(code_directory):
+    if exists(code_directory):
         print('Removing the following directory: %s' % code_directory)
         sudo('rm -rf %s' % code_directory)
     git_clone_command = 'git clone {1} {2} --branch {0} --single-branch'
@@ -83,7 +78,7 @@ def put_formatted_template_on_server(template, destination_file_path, **kwargs):
 
 
 def create_dhparam_if_necessary(dhparam_path):
-    if exists_on_remote(dhparam_path):
+    if exists(dhparam_path):
         print('dhparam file exists, skipping this step')
         return
     sudo('openssl dhparam -out %s 2048' % dhparam_path)
@@ -175,7 +170,7 @@ def bootstrap(branch='master'):
     dhparam_path = '/etc/ssl/certs/dhparam.pem'
     create_dhparam_if_necessary(dhparam_path)
     ssl_params_path = '/etc/nginx/snippets/ssl-params.conf'
-    if exists_on_remote(ssl_params_path):
+    if exists(ssl_params_path):
         print('Not creating ssl-params.conf, already exists')
     else:
         put_formatted_template_on_server(
@@ -185,7 +180,7 @@ def bootstrap(branch='master'):
         )
 
     nginx_config_path = os.path.join('/etc/nginx/sites-available', domain_name)
-    nginx_installed = exists_on_remote(nginx_config_path)
+    nginx_installed = exists(nginx_config_path)
     if nginx_installed:
         print('nginx config found, skipping letsencrypt setup')
     else:
