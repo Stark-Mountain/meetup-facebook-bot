@@ -1,5 +1,6 @@
 import os.path
 from getpass import getpass
+from collections import OrderedDict
 
 from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env,\
         local, abort
@@ -12,6 +13,8 @@ PROJECT_FOLDER = '/var/www/meetup-facebook-bot'  # must not end with '/'
 PERMANENT_PROJECT_FOLDER = "%s.permanent" % PROJECT_FOLDER
 REPOSITORY_URL = 'https://github.com/Stark-Mountain/meetup-facebook-bot.git'
 UWSGI_SERVICE_NAME = 'meetup-facebook-bot.service'
+SOCKET_PATH = '/tmp/meetup-facebook-bot.socket'
+INI_FILE_PATH = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
 
 
 def install_python():
@@ -106,56 +109,69 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
         run('python3 %s/set_start_button.py' % code_directory)
 
 
+def prompt_for_environment_variables(env_vars):
+    for env_var, value in env_vars.items():
+        if value is None or confirm('%s is set. Change it?'):
+            env_vars[env_var] = prompt('Enter %s:' % env_var)
+    return env_vars
+
+
+@task
+def renew_ini_file(database_url=None):
+    env_vars = OrderedDict(
+        [
+            ('DATABASE_URL', None),
+            ('PAGE_ID', None),
+            ('APP_ID', None),
+            ('ACCESS_TOKEN', None),
+            ('VERIFY_TOKEN', None),
+            ('SECRET_KEY', None),
+            ('ADMIN_LOGIN', None),
+            ('ADMIN_PASSWORD', None),
+        ]
+    )
+    env_vars['DATABASE_URL'] = database_url
+    env_vars = prompt_for_environment_variables(env_vars)
+    config_vars = env_vars.copy()
+    config_vars['SOCKET_PATH'] = SOCKET_PATH
+    upload_template(
+        filename='deploy_configs/meetup-facebook-bot.ini',
+        destination=INI_FILE_PATH,
+        context=config_vars,
+        use_sudo=True
+    )
+    env.env_vars = env_vars
+
+
+def create_permanent_folder():
+    with settings(warn_only=True):
+        sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
+
+
 @task
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
-    page_id = prompt('Enter PAGE_ID:')
-    app_id = prompt('Enter APP_ID:')
-    access_token = getpass('Enter the app ACCESS_TOKEN: ')
-    verify_token = getpass('Enter VERIFY_TOKEN: ')
-    secret_key = getpass('Enter SECRET_KEY: '),
-    admin_login = getpass('Enter ADMIN_LOGIN: ')
-    admin_password = getpass('Enter ADMIN_PASSWORD: ')
 
-    with settings(warn_only=True):
-        sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
+    create_permanent_folder()
+    install_postgres()
+    database_url = setup_postgres(username=env.user, database_name=env.user)
+    renew_ini_file(database_url)
 
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
     venv_bin_directory = reinstall_venv(PERMANENT_PROJECT_FOLDER)
     install_modules(PROJECT_FOLDER, venv_bin_directory)
     install_nginx()
-    install_postgres()
     setup_ufw()
 
-    database_url = setup_postgres(username=env.user, database_name=env.user)
-    socket_path = '/tmp/meetup-facebook-bot.socket'
-    ini_file_path = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
-    ini_configs = {
-        'database_url': database_url,
-        'access_token': access_token,
-        'page_id': page_id,
-        'app_id': app_id,
-        'verify_token': verify_token,
-        'socket_path': socket_path,
-        'secret_key': secret_key,
-        'admin_login': admin_login, 
-        'admin_password': admin_password
-    }
-    upload_template(
-        filename='deploy_configs/meetup-facebook-bot.ini',
-        destination=ini_file_path,
-        context=ini_configs,
-        use_sudo=True
-    )
 
     service_file_config = {
         'user': env.user,
         'work_dir': PROJECT_FOLDER,
         'env_bin_dir': venv_bin_directory,
         'uwsgi_path': os.path.join(venv_bin_directory, 'uwsgi'),
-        'app_ini_path': ini_file_path
+        'app_ini_path': INI_FILE_PATH
     }
     upload_template(
         filename='deploy_configs/meetup-facebook-bot.service',
@@ -201,7 +217,7 @@ def bootstrap(branch='master'):
             'ssl_params_path': ssl_params_path,
             'fullchain_path': os.path.join(letsnecrypt_folder, 'fullchain.pem'),
             'privkey_path': os.path.join(letsnecrypt_folder, 'privkey.pem'),
-            'socket_path': socket_path
+            'socket_path': SOCKET_PATH
         }
         upload_template(
             filename='deploy_configs/nginx_config',
@@ -214,6 +230,8 @@ def bootstrap(branch='master'):
 
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
+    access_token = env.env_vars['ACCESS_TOKEN']
+    database_url = env.env_vars['DATABASE_URL']
     run_setup_scripts(access_token, database_url, venv_bin_directory, PROJECT_FOLDER)
 
 
