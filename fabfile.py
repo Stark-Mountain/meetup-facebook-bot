@@ -148,6 +148,22 @@ def create_permanent_folder():
         sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
 
 
+def create_service_file():
+    service_file_config = {
+        'user': env.user,
+        'work_dir': PROJECT_FOLDER,
+        'env_bin_dir': VENV_BIN_DIRECTORY,
+        'uwsgi_path': os.path.join(VENV_BIN_DIRECTORY, 'uwsgi'),
+        'app_ini_path': INI_FILE_PATH
+    }
+    upload_template(
+        filename='deploy_configs/meetup-facebook-bot.service',
+        destination=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
+        context=service_file_config,
+        use_sudo=True
+    )
+
+
 @task
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
@@ -164,20 +180,6 @@ def bootstrap(branch='master'):
     install_modules(PROJECT_FOLDER, VENV_BIN_DIRECTORY)
     install_nginx()
     setup_ufw()
-
-    service_file_config = {
-        'user': env.user,
-        'work_dir': PROJECT_FOLDER,
-        'env_bin_dir': VENV_BIN_DIRECTORY,
-        'uwsgi_path': os.path.join(VENV_BIN_DIRECTORY, 'uwsgi'),
-        'app_ini_path': INI_FILE_PATH
-    }
-    upload_template(
-        filename='deploy_configs/meetup-facebook-bot.service',
-        destination=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
-        context=service_file_config,
-        use_sudo=True
-    )
 
     dhparam_path = '/etc/ssl/certs/dhparam.pem'
     create_dhparam_if_necessary(dhparam_path)
