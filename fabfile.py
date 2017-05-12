@@ -100,7 +100,7 @@ def run_setup_scripts(access_token, database_url):
 
 def prompt_for_environment_variables(env_vars):
     for env_var, value in env_vars.items():
-        if value is None or confirm('%s is set. Change it?'):
+        if value is None or confirm('%s is set. Change it?' % env_var):
             env_vars[env_var] = prompt('Enter %s:' % env_var)
     return env_vars
 
