@@ -39,8 +39,6 @@ def handle_no_ask_question_url_postback(messaging_event, access_token, db_sessio
 def handle_message_with_sender_id(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     talks = db_session.query(Talk).all()
-    if is_talk_rate_command(messaging_event):
-        return
     return messaging.send_schedule(access_token, sender_id, talks, db_session)
 
 
