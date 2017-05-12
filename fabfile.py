@@ -259,11 +259,7 @@ def deploy(branch='master'):
     start_nginx()
 
 
-def print_service_status(service_name):
-    sudo('systemctl status %s' % service_name)
-
-
 @task
 def status():
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
-    print_service_status(UWSGI_SERVICE_NAME)
+    sudo('systemctl status %s' % UWSGI_SERVICE_NAME)
