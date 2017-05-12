@@ -226,23 +226,19 @@ def configure_nginx_if_necessary():
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     env.domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
-
     create_permanent_folder()
     install_postgres()
     database_url = setup_postgres(username=env.user, database_name=env.user)
     renew_ini_file(database_url)
-
     install_python()
     fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
     reinstall_venv()
     install_modules(PROJECT_FOLDER, VENV_BIN_DIRECTORY)
     install_nginx()
-    setup_ufw()
-
     configure_letsencrypt_if_necessary()
     add_nginx_reload_crontab_job()
     configure_nginx_if_necessary()
-
+    setup_ufw()
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
     access_token = env.env_vars['ACCESS_TOKEN']
