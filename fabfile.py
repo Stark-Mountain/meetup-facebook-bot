@@ -1,11 +1,10 @@
 import os.path
 from getpass import getpass
-from io import BytesIO
 
-from fabric.api import sudo, run, cd, prefix, settings, task, env, put, prompt, shell_env,\
+from fabric.api import sudo, run, cd, prefix, settings, task, env, prompt, shell_env,\
         local, abort
 from fabric.contrib.console import confirm
-from fabric.contrib.files import exists
+from fabric.contrib.files import exists, upload_template
 
 env.hosts = ['vergeev@meetup-bot.me']
 
@@ -65,16 +64,6 @@ def setup_postgres(username, database_name):
         sudo('sudo -u postgres createuser %s -s' % username)
         sudo('sudo -u postgres createdb %s' % database_name)
     return 'postgresql://%s@/%s' % (username, database_name)
-
-
-def load_text_from_file(filepath):
-    with open(filepath) as text_file:
-        return text_file.read()
-
-
-def put_formatted_template_on_server(template, destination_file_path, **kwargs):
-    formatted_template = template.format(**kwargs)
-    put(BytesIO(formatted_template.encode('utf-8')), destination_file_path, use_sudo=True)
 
 
 def create_dhparam_if_necessary(dhparam_path):
@@ -143,28 +132,36 @@ def bootstrap(branch='master'):
     database_url = setup_postgres(username=env.user, database_name=env.user)
     socket_path = '/tmp/meetup-facebook-bot.socket'
     ini_file_path = os.path.join(PERMANENT_PROJECT_FOLDER, 'meetup-facebook-bot.ini')
-    put_formatted_template_on_server(
-        template=load_text_from_file('deploy_configs/meetup-facebook-bot.ini'),
-        destination_file_path=ini_file_path,
-        database_url=database_url,
-        access_token=access_token,
-        page_id=page_id,
-        app_id=app_id,
-        verify_token=verify_token,
-        socket_path=socket_path,
-        secret_key=secret_key,
-        admin_login=admin_login,
-        admin_password=admin_password
+    ini_configs = {
+        'database_url': database_url,
+        'access_token': access_token,
+        'page_id': page_id,
+        'app_id': app_id,
+        'verify_token': verify_token,
+        'socket_path': socket_path,
+        'secret_key': secret_key,
+        'admin_login': admin_login, 
+        'admin_password': admin_password
+    }
+    upload_template(
+        filename='deploy_configs/meetup-facebook-bot.ini',
+        destination=ini_file_path,
+        context=ini_configs,
+        use_sudo=True
     )
 
-    put_formatted_template_on_server(
-        template=load_text_from_file('deploy_configs/meetup-facebook-bot.service'),
-        destination_file_path=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
-        user=env.user,
-        work_dir=PROJECT_FOLDER,
-        env_bin_dir=venv_bin_directory,
-        uwsgi_path=os.path.join(venv_bin_directory, 'uwsgi'),
-        app_ini_path=ini_file_path
+    service_file_config = {
+        'user': env.user,
+        'work_dir': PROJECT_FOLDER,
+        'env_bin_dir': venv_bin_directory,
+        'uwsgi_path': os.path.join(venv_bin_directory, 'uwsgi'),
+        'app_ini_path': ini_file_path
+    }
+    upload_template(
+        filename='deploy_configs/meetup-facebook-bot.service',
+        destination=os.path.join('/etc/systemd/system/', UWSGI_SERVICE_NAME),
+        context=service_file_config,
+        use_sudo=True
     )
 
     dhparam_path = '/etc/ssl/certs/dhparam.pem'
@@ -173,10 +170,11 @@ def bootstrap(branch='master'):
     if exists(ssl_params_path):
         print('Not creating ssl-params.conf, already exists')
     else:
-        put_formatted_template_on_server(
-            template=load_text_from_file('deploy_configs/ssl_params'),
-            destination_file_path=ssl_params_path,
-            dhparam_path=dhparam_path
+        upload_template(
+            filename='deploy_configs/ssl_params',
+            destination=ssl_params_path,
+            context={'dhparam_path': dhparam_path},
+            use_sudo=True
         )
 
     nginx_config_path = os.path.join('/etc/nginx/sites-available', domain_name)
@@ -197,15 +195,19 @@ def bootstrap(branch='master'):
     if nginx_installed:
         print('nginx config found, not creating another one')
     else:
-        put_formatted_template_on_server(
-            template=load_text_from_file('deploy_configs/nginx_config'),
-            destination_file_path=nginx_config_path,
-            source_dir=PROJECT_FOLDER,
-            domain=domain_name,
-            ssl_params_path=ssl_params_path,
-            fullchain_path=os.path.join(letsnecrypt_folder, 'fullchain.pem'),
-            privkey_path=os.path.join(letsnecrypt_folder, 'privkey.pem'),
-            socket_path=socket_path
+        nginx_config_variables = {
+            'source_dir': PROJECT_FOLDER,
+            'domain': domain_name,
+            'ssl_params_path': ssl_params_path,
+            'fullchain_path': os.path.join(letsnecrypt_folder, 'fullchain.pem'),
+            'privkey_path': os.path.join(letsnecrypt_folder, 'privkey.pem'),
+            'socket_path': socket_path
+        }
+        upload_template(
+            filename='deploy_configs/nginx_config',
+            destination=nginx_config_path,
+            context=nginx_config_variables,
+            use_sudo=True
         )
     nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', domain_name)
     sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))

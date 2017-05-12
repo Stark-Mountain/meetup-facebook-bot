@@ -1,24 +1,24 @@
-server {{
+server {
     listen 80;
     listen [::]:80;
 
-    server_name {domain};
+    server_name %(domain)s;
     return 301 https://$server_name$request_uri;
-}}
+}
 
-server {{
+server {
     listen 443 ssl default_server;
     listen [::]:443 ssl default_server;
-    include {ssl_params_path};
+    include %(ssl_params_path)s;
 
-    ssl_certificate {fullchain_path};
-    ssl_certificate_key {privkey_path};
+    ssl_certificate %(fullchain_path)s;
+    ssl_certificate_key %(privkey_path)s;
 
-    root {source_dir};
+    root %(source_dir)s;
     index index.html index.htm index.nginx-debian.html;
 
-    location / {{
+    location / {
         include uwsgi_params;
-        uwsgi_pass unix:{socket_path};
-    }}
-}}
+        uwsgi_pass unix:%(socket_path)s;
+    }
+}
