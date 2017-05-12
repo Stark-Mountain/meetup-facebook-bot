@@ -123,7 +123,7 @@ def run_setup_scripts(access_token, database_url, venv_bin_directory, code_direc
 
 
 @task
-def prepare_machine(branch='master'):
+def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
     page_id = prompt('Enter PAGE_ID:')
@@ -238,7 +238,7 @@ def print_service_status(service_name):
 
 
 @task
-def show_status():
+def status():
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     print_service_status(UWSGI_SERVICE_NAME)
 
@@ -250,7 +250,7 @@ def test():
         abort('Aborting at user request.')
 
 
-def commit():
+def git_commit():
     with settings(warn_only=True):
         local('git add -i && git commit')
 
@@ -260,7 +260,7 @@ def push(branch):
 
 
 @task
-def prepare_deploy(branch):
+def commit(branch):
     test()
-    commit()
+    git_commit()
     push(branch)
