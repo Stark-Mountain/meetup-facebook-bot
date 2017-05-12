@@ -177,7 +177,7 @@ def configure_letsencrypt_if_necessary():
     create_ssl_params_if_necessary()
     env.letsencrypt_folder = os.path.join('/etc/letsencrypt/live', env.domain_name)
     print('Assuming letsencrypt folder is %s' % env.letsencrypt_folder)
-    if exists(env.letsencrypt_folder):
+    if exists(env.letsencrypt_folder, use_sudo=True):
         print('letsencrypt folder found, skipping letsencrypt setup')
         return
     start_letsencrypt_setup()
