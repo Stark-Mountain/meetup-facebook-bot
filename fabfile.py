@@ -26,12 +26,12 @@ def install_python():
     sudo('apt-get install python3-pip python3-dev python3-venv')
 
 
-def fetch_sources_from_repo(repository_url, branch, code_directory):
+def fetch_sources_from_repo(branch, code_directory):
     if exists(code_directory):
         print('Removing the following directory: %s' % code_directory)
         sudo('rm -rf %s' % code_directory)
     git_clone_command = 'git clone {1} {2} --branch {0} --single-branch'
-    sudo(git_clone_command.format(branch, repository_url, code_directory))
+    sudo(git_clone_command.format(branch, REPOSITORY_URL, code_directory))
 
 
 def reinstall_venv():
@@ -231,7 +231,7 @@ def bootstrap(branch='master'):
     database_url = setup_postgres(username=env.user, database_name=env.user)
     renew_ini_file(database_url)
     install_python()
-    fetch_sources_from_repo(REPOSITORY_URL, branch=branch, code_directory=PROJECT_FOLDER)
+    fetch_sources_from_repo(branch, PROJECT_FOLDER)
     reinstall_venv()
     install_modules(PROJECT_FOLDER, VENV_BIN_DIRECTORY)
     install_nginx()
@@ -251,7 +251,7 @@ def deploy(branch='master'):
     update_dependencies = confirm('Update dependencies?')
     print('OK, deploying branch %s' % branch)
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
-    fetch_sources_from_repo(REPOSITORY_URL, branch, PROJECT_FOLDER)
+    fetch_sources_from_repo(branch, PROJECT_FOLDER)
     if update_dependencies:
         venv_bin_path = reinstall_venv(PERMANENT_PROJECT_FOLDER)
         install_modules(PROJECT_FOLDER, venv_bin_path)
