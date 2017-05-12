@@ -199,6 +199,29 @@ def add_nginx_reload_crontab_job():
         sudo(restart_command)
 
 
+def configure_nginx_if_necessary():
+    nginx_config_path = os.path.join('/etc/nginx/sites-available', env.domain_name)
+    if exists(nginx_config_path):
+        print('nginx config found, not creating another one')
+    else:
+        nginx_config_variables = {
+            'source_dir': PROJECT_FOLDER,
+            'domain': env.domain_name,
+            'ssl_params_path': SSL_PARAMS_PATH,
+            'fullchain_path': os.path.join(env.letsencrypt_folder, 'fullchain.pem'),
+            'privkey_path': os.path.join(env.letsencrypt_folder, 'privkey.pem'),
+            'socket_path': SOCKET_PATH
+        }
+        upload_template(
+            filename='deploy_configs/nginx_config',
+            destination=nginx_config_path,
+            context=nginx_config_variables,
+            use_sudo=True
+        )
+    nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', env.domain_name)
+    sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
+
+
 @task
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
@@ -218,30 +241,7 @@ def bootstrap(branch='master'):
 
     configure_letsencrypt_if_necessary()
     add_nginx_reload_crontab_job()
-
-    nginx_config_path = os.path.join('/etc/nginx/sites-available', env.domain_name)
-    nginx_installed = exists(nginx_config_path)
-
-
-    if nginx_installed:
-        print('nginx config found, not creating another one')
-    else:
-        nginx_config_variables = {
-            'source_dir': PROJECT_FOLDER,
-            'domain': env.domain_name,
-            'ssl_params_path': SSL_PARAMS_PATH,
-            'fullchain_path': os.path.join(env.letsencrypt_folder, 'fullchain.pem'),
-            'privkey_path': os.path.join(env.letsencrypt_folder, 'privkey.pem'),
-            'socket_path': SOCKET_PATH
-        }
-        upload_template(
-            filename='deploy_configs/nginx_config',
-            destination=nginx_config_path,
-            context=nginx_config_variables,
-            use_sudo=True
-        )
-    nginx_config_alias = os.path.join('/etc/nginx/sites-enabled', env.domain_name)
-    sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
+    configure_nginx_if_necessary()
 
     start_uwsgi(UWSGI_SERVICE_NAME)
     start_nginx()
