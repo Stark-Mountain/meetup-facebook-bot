@@ -113,8 +113,8 @@ def webhook():
             message_handlers.handle_speaker_auth
         ),
         (
-            message_validators.has_sender_id,
-            message_handlers.handle_message_with_sender_id
+            message_validators.is_appropriate_to_send_schedule,
+            message_handlers.handle_schedule_command
         )
     ]
     access_token = app.config['ACCESS_TOKEN']

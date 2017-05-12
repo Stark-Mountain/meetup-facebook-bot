@@ -1,7 +1,6 @@
 from meetup_facebook_bot.models.talk import Talk
 from meetup_facebook_bot.models.speaker import Speaker
 from meetup_facebook_bot.messenger import messaging
-from meetup_facebook_bot.messenger.message_validators import is_talk_rate_command
 
 
 def handle_talk_info_command(messaging_event, access_token, db_session):
@@ -36,11 +35,9 @@ def handle_no_ask_question_url_postback(messaging_event, access_token, db_sessio
     return messaging.send_no_ask_question_url_warning(access_token, sender_id)
 
 
-def handle_message_with_sender_id(messaging_event, access_token, db_session):
+def handle_schedule_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     talks = db_session.query(Talk).all()
-    if is_talk_rate_command(messaging_event):
-        return
     return messaging.send_schedule(access_token, sender_id, talks, db_session)
 
 
