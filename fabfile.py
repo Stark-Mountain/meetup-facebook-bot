@@ -277,3 +277,12 @@ def status():
     if env.sudo_password is None:
         env.sudo_password = getpass('Initial value for env.sudo_password: ')
     sudo('systemctl status %s' % UWSGI_SERVICE_NAME)
+
+
+@task
+def reset_db():
+    env.sudo_password = getpass('Initial value for env.sudo_password: ')
+    sudo('systemctl stop %s' % UWSGI_SERVICE_NAME)
+    empty_database(database_name=env.user)
+    fill_database_with_example_data()
+    sudo('systemctl start %s' % UWSGI_SERVICE_NAME)
