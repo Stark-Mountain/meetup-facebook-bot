@@ -238,6 +238,7 @@ def bootstrap(branch='master'):
     access_token = env.env_vars['ACCESS_TOKEN']
     database_url = env.env_vars['DATABASE_URL']
     run_setup_scripts(access_token, database_url)
+    status()
 
 
 @task
@@ -251,9 +252,11 @@ def deploy(branch='master'):
         install_modules()
     start_systemctl_service(UWSGI_SERVICE_NAME)
     start_systemctl_service('nginx')
+    status()
 
 
 @task
 def status():
-    env.sudo_password = getpass('Initial value for env.sudo_password: ')
+    if env.sudo_password is None:
+        env.sudo_password = getpass('Initial value for env.sudo_password: ')
     sudo('systemctl status %s' % UWSGI_SERVICE_NAME)
