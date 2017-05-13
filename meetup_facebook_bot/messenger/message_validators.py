@@ -1,4 +1,4 @@
-def is_quick_button(messaging_event):
+def is_quick_reply_button(messaging_event):
     """ More about Quick Replies at:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
     """
@@ -46,7 +46,7 @@ def is_talk_rate_command(messaging_event):
 
 
 def is_talk_like_command(messaging_event):
-    if not is_quick_button(messaging_event):
+    if not is_quick_reply_button(messaging_event):
         return False
     return 'like talk' in messaging_event['message']['quick_reply']['payload']
 
