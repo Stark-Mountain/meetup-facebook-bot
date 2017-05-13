@@ -70,6 +70,11 @@ def setup_postgres(username, database_name):
     return 'postgresql://%s@/%s' % (username, database_name)
 
 
+def empty_database(database_name):
+    sudo('sudo -u postgres dropdb %s' % database_name)
+    sudo('sudo -u postgres createdb %s' % database_name)
+
+
 def start_letsencrypt_setup():
     sudo("mkdir -p /tmp/git")
     sudo("rm -rf /tmp/git/letsencrypt")
