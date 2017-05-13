@@ -70,6 +70,11 @@ def setup_postgres(username, database_name):
     return 'postgresql://%s@/%s' % (username, database_name)
 
 
+def empty_database(database_name):
+    sudo('sudo -u postgres dropdb %s' % database_name)
+    sudo('sudo -u postgres createdb %s' % database_name)
+
+
 def start_letsencrypt_setup():
     sudo("mkdir -p /tmp/git")
     sudo("rm -rf /tmp/git/letsencrypt")
@@ -84,18 +89,6 @@ def start_systemctl_service(service_name):
     sudo('systemctl daemon-reload')
     sudo('systemctl enable %s' % service_name)
     sudo('systemctl restart %s' % service_name)
-
-
-def run_setup_scripts(access_token, database_url):
-    environ_params = {
-        'ACCESS_TOKEN': access_token,
-        'DATABASE_URL': database_url,
-    }
-    venv_activate_path = os.path.join(VENV_BIN_DIRECTORY, 'activate')
-    venv_activate_command = 'source %s' % venv_activate_path
-    with cd(PROJECT_FOLDER), shell_env(**environ_params), prefix(venv_activate_command):
-        run('python3 %s/database_setup.py' % PROJECT_FOLDER)
-        run('python3 %s/set_start_button.py' % PROJECT_FOLDER)
 
 
 def prompt_for_environment_variables(env_vars):
@@ -216,6 +209,32 @@ def configure_nginx_if_necessary():
     sudo('ln -sf %s %s' % (nginx_config_path, nginx_config_alias))
 
 
+def run_setup_script(script_name, context):
+    venv_activate_path = os.path.join(VENV_BIN_DIRECTORY, 'activate')
+    venv_activate_command = 'source %s' % venv_activate_path
+    with cd(PROJECT_FOLDER), shell_env(**context), prefix(venv_activate_command):
+        run('python3 %s' % os.path.join(PROJECT_FOLDER, script_name))
+
+
+def fill_database_with_example_data():
+    database_url = getattr(env, 'env_vars', {}).get('DATABASE_URL')
+    context = {'DATABASE_URL': database_url}
+    context = prompt_for_environment_variables(context)
+    run_setup_script('database_setup.py', context)
+
+
+def set_start_button():
+    access_token = getattr(env, 'env_vars', {}).get('ACCESS_TOKEN')
+    context = {'ACCESS_TOKEN': access_token}
+    context = prompt_for_environment_variables(context)
+    run_setup_script('set_start_button.py', context)
+
+
+def run_setup_scripts():
+    fill_database_with_example_data()
+    set_start_button()
+
+
 @task
 def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
@@ -235,9 +254,8 @@ def bootstrap(branch='master'):
     setup_ufw()
     start_systemctl_service(UWSGI_SERVICE_NAME)
     start_systemctl_service('nginx')
-    access_token = env.env_vars['ACCESS_TOKEN']
-    database_url = env.env_vars['DATABASE_URL']
-    run_setup_scripts(access_token, database_url)
+    run_setup_scripts()
+    status()
 
 
 @task
@@ -251,9 +269,20 @@ def deploy(branch='master'):
         install_modules()
     start_systemctl_service(UWSGI_SERVICE_NAME)
     start_systemctl_service('nginx')
+    status()
 
 
 @task
 def status():
-    env.sudo_password = getpass('Initial value for env.sudo_password: ')
+    if env.sudo_password is None:
+        env.sudo_password = getpass('Initial value for env.sudo_password: ')
     sudo('systemctl status %s' % UWSGI_SERVICE_NAME)
+
+
+@task
+def reset_db():
+    env.sudo_password = getpass('Initial value for env.sudo_password: ')
+    sudo('systemctl stop %s' % UWSGI_SERVICE_NAME)
+    empty_database(database_name=env.user)
+    fill_database_with_example_data()
+    sudo('systemctl start %s' % UWSGI_SERVICE_NAME)
