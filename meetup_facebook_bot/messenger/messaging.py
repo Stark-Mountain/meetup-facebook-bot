@@ -6,30 +6,24 @@ import requests
 
 
 def send_rate_menu(access_token, user_id, talk, db_session):
-    """ Makes use of Quick Replies:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
-    """
     if talk.is_liked_by(user_id, db_session):
         rate_button_title = 'Убрать лайк'
     else:
         rate_button_title = 'Поставить лайк'
-    talk_title = talk.title
-    rate_menu_message_body = {
-        'text': 'Как оценишь доклад? \n %s' % talk_title,
-        'quick_replies': [
-            {
-                'content_type': 'text',
-                'title': rate_button_title,
-                'payload': 'like talk %d' % talk.id
-            },
-            {
-                'content_type': 'text',
-                'title': 'Отменить',
-                'payload': 'cancel payload'
-            }
-        ]
-    }
-    return send_message_to_facebook(access_token, user_id, rate_menu_message_body)
+    rate_button_payload = 'like talk %d' % talk.id
+    cancel_button_title = 'Отменить'
+    cancel_button_payload = 'cancel payload'
+    rate_button = generate_quick_reply_text_button(
+        rate_button_title,
+        rate_button_payload
+    )
+    cancel_button = generate_quick_reply_text_button(
+        cancel_button_title,
+        cancel_button_payload
+    )
+    buttons = [rate_button, cancel_button]
+    text = 'Как вам доклад "%s"?' % talk.title
+    return send_quick_replies(access_token, user_id, text, buttons)
 
 
 def send_like_confirmation(access_token, user_id, talk, db_session):
@@ -126,6 +120,26 @@ def send_authentication_confirmation(access_token, user_id, speaker_name):
 def send_no_ask_question_url_warning(access_token, sender_id):
     text = 'Я не знаю, куда отправлять вопрос.'
     return send_text_message(access_token, sender_id, text)
+
+
+def generate_quick_reply_text_button(title, payload):
+    button = {
+        'content_type': 'text',
+        'title': title,
+        'payload': payload
+    }
+    return button
+
+
+def send_quick_replies(access_token, user_id, text, buttons):
+    """ Makes use of Quick Replies:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/quick-replies
+    """
+    message_body = {
+        'text': text,
+        'quick_replies': buttons
+    }
+    return send_message_to_facebook(access_token, user_id, message_body)
 
 
 def send_text_message(access_token, user_id, text):
