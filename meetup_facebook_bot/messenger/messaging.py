@@ -176,6 +176,9 @@ def send_text_message(access_token, user_id, text):
 
 
 def send_message_to_facebook(access_token, user_id, message_data):
+    """ Makes use of Send API:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference
+    """
     headers = {
         'Content-Type': 'application/json',
     }
