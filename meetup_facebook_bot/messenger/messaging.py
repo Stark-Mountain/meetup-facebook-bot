@@ -38,10 +38,7 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
         like_text_message = 'Поставил лайк докладу:\n %s' % talk_title
     else:
         like_text_message = 'Убрал лайк c доклада:\n %s' % talk_title
-    like_message_body = {
-        "text": like_text_message
-    }
-    return send_message_to_facebook(access_token, user_id, like_message_body)
+    return send_text_message(access_token, user_id, like_text_message)
 
 
 def generate_ask_question_button(ask_question_url):
@@ -109,47 +106,36 @@ def send_schedule(access_token, user_id, talks, db_session):
 
 
 def send_talk_info(access_token, user_id, talk):
-    """ Send a simple Facebook message:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
-    """
     title = talk.title
     speaker = talk.speaker.name
     description = talk.description or 'Нет описания.'
     more_info_text = '"%s"\n\n%s:\n%s' % (title, speaker, description)
-    more_info = {
-        'text': more_info_text
-    }
-    return send_message_to_facebook(access_token, user_id, more_info)
+    return send_text_message(access_token, user_id, more_info_text)
 
 
 def send_duplicate_authentication_error(access_token, user_id):
-    """ Send a simple Facebook message:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
-    """
-    error_message_body = {
-        'text': 'Докладчик уже авторизован, повторно не получится.'
-    }
-    return send_message_to_facebook(access_token, user_id, error_message_body)
+    text = 'Докладчик уже авторизован, повторно не получится.'
+    return send_text_message(access_token, user_id, text)
 
 
 def send_authentication_confirmation(access_token, user_id, speaker_name):
-    """ Send a simple Facebook message:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
-    """
-    confirmation_message_body = {
-        'text': 'Вы зарегистрировались как докладчик %s.' % speaker_name
-    }
-    return send_message_to_facebook(access_token, user_id, confirmation_message_body)
+    text = 'Вы зарегистрировались как докладчик %s.' % speaker_name
+    return send_text_message(access_token, user_id, text)
 
 
 def send_no_ask_question_url_warning(access_token, sender_id):
+    text = 'Я не знаю, куда отправлять вопрос.'
+    return send_text_message(access_token, sender_id, text)
+
+
+def send_text_message(access_token, user_id, text):
     """ Send a simple Facebook message:
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/text-message
     """
-    warning_message_body = {
-        'text': 'Я не знаю, куда отправлять вопрос.'
+    message_body = {
+        'text': text
     }
-    return send_message_to_facebook(access_token, sender_id, warning_message_body)
+    return send_message_to_facebook(access_token, user_id, message_body)
 
 
 def send_message_to_facebook(access_token, user_id, message_data):
