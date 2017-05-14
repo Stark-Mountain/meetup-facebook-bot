@@ -36,67 +36,47 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
 
 
 def generate_ask_question_button(ask_question_url):
+    title = 'Задать вопрос'
     if ask_question_url is None:
-        ask_question_button = {
-            'type': 'postback',
-            'title': 'Задать вопрос',
-            'payload': 'ask question no url'
-        }
-    else:
-        ask_question_button = {
-            'type': 'web_url',
-            'url': ask_question_url,
-            'title': 'Задать вопрос',
-        }
-    return ask_question_button
+        payload = 'ask question no url'
+        return generate_postback_button(title, payload)
+    return generate_web_url_button(title, ask_question_url)
+
+
+def generate_schedule_page_subtitle(like_text, number_of_likes, speaker_name):
+    return '{like_text}\nЛайков: {number_of_likes}\nСпикер: {name}'.format(
+        like_text=like_text,
+        number_of_likes=number_of_likes,
+        name=speaker_name
+    )
 
 
 def send_schedule(access_token, user_id, talks, db_session):
-    """ Makes use of Generic Template:
-        https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
-    """
-    elements = []
+    generic_template_pages = []
     for talk in talks:
         number_of_likes = talk.count_likes(db_session)
         if talk.is_liked_by(user_id, db_session):
             like_text = 'Вы лайкнули этот доклад'
         else:
             like_text = 'Вы не оценили этот докад'
-        element_subtitle = '{like_text}\nЛайков: {number_of_likes}\nСпикер: {name}'.format(
-            like_text=like_text,
-            number_of_likes=number_of_likes,
-            name=talk.speaker.name
+        page_subtitle = generate_schedule_page_subtitle(
+            like_text,
+            number_of_likes,
+            talk.speaker.name
+        )
+        more_talk_info_button = generate_postback_button(
+            title='Получить подробности',
+            payload='info talk %d' % talk.id
+        )
+        rate_button = generate_postback_button(
+            title='Оценить',
+            payload='rate talk %d' % talk.id
         )
         ask_question_button = generate_ask_question_button(talk.ask_question_url)
-        element = {
-            'title': talk.title,
-            'subtitle': element_subtitle,
-            'buttons': [
-                {
-                    'type': 'postback',
-                    'title': 'Получить подробности',
-                    'payload': 'info talk %d' % talk.id
-                },
-                {
-                    'type': 'postback',
-                    'title': 'Оценить',
-                    'payload': 'rate talk %d' % talk.id
-                },
-                ask_question_button
-            ]
-        }
-        elements.append(element)
-
-    schedule_message_body = {
-        'attachment': {
-            'type': 'template',
-            'payload': {
-                'template_type': 'generic',
-                'elements': elements
-            }
-        }
-    }
-    return send_message_to_facebook(access_token, user_id, schedule_message_body)
+        buttons = [more_talk_info_button, rate_button, ask_question_button]
+        page = generate_generic_template_page(talk.title, page_subtitle, buttons)
+        generic_template_pages.append(page)
+    return send_generic_template(access_token, user_id, generic_template_pages)
 
 
 def send_talk_info(access_token, user_id, talk):
@@ -122,6 +102,24 @@ def send_no_ask_question_url_warning(access_token, sender_id):
     return send_text_message(access_token, sender_id, text)
 
 
+def generate_postback_button(title, payload):
+    button = {
+        'type': 'postback',
+        'title': title,
+        'payload': payload
+    }
+    return button
+
+
+def generate_web_url_button(title, url):
+    button = {
+        'type': 'web_url',
+        'url': url,
+        'title': title
+    }
+    return button
+
+
 def generate_quick_reply_text_button(title, payload):
     button = {
         'content_type': 'text',
@@ -129,6 +127,31 @@ def generate_quick_reply_text_button(title, payload):
         'payload': payload
     }
     return button
+
+
+def generate_generic_template_page(title, subtitle, buttons):
+    page = {
+        'title': title,
+        'subtitle': subtitle,
+        'buttons': buttons
+    }
+    return page
+
+
+def send_generic_template(access_token, user_id, pages):
+    """ Makes use of Generic Template:
+        https://developers.facebook.com/docs/messenger-platform/send-api-reference/generic-template
+    """
+    message_body = {
+        'attachment': {
+            'type': 'template',
+            'payload': {
+                'template_type': 'generic',
+                'elements': pages
+            }
+        }
+    }
+    return send_message_to_facebook(access_token, user_id, message_body)
 
 
 def send_quick_replies(access_token, user_id, text, buttons):
