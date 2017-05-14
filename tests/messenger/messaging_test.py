@@ -35,13 +35,15 @@ class MessagingTestCase(TestCase):
 
     def test_send_schedule(self):
         talks = self.generate_mockup_talks()
-        db_session = MagicMock()
+        talk_like_numbers = {talk.id: 0 for talk in talks}
+        liked_talk_ids = []
         with vcr.use_cassette('vcr_cassettes/send_schedule.yaml'):
             response = messaging.send_schedule(
                 self.access_token,
                 self.user_id,
                 talks,
-                db_session
+                talk_like_numbers,
+                liked_talk_ids
             )
         self.assertTrue('recipient_id' in response)
         self.assertTrue('message_id' in response)
@@ -57,9 +59,9 @@ class MessagingTestCase(TestCase):
 
     def test_send_rate_menu(self):
         talk = self.create_mockup_talk()
-        db_session = MagicMock()
+        talk_liked = False
         with vcr.use_cassette('vcr_cassettes/send_rate_menu.yaml'):
-            response = messaging.send_rate_menu(self.access_token, self.user_id, talk, db_session)
+            response = messaging.send_rate_menu(self.access_token, self.user_id, talk, talk_liked)
         self.assertTrue('recipient_id' in response)
         self.assertTrue('message_id' in response)
         self.assertEqual(response['recipient_id'], self.user_id)
