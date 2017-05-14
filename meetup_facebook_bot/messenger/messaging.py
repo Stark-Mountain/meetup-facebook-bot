@@ -97,9 +97,9 @@ def send_authentication_confirmation(access_token, user_id, speaker_name):
     return send_text_message(access_token, user_id, text)
 
 
-def send_no_ask_question_url_warning(access_token, sender_id):
+def send_no_ask_question_url_warning(access_token, user_id):
     text = 'Я не знаю, куда отправлять вопрос.'
-    return send_text_message(access_token, sender_id, text)
+    return send_text_message(access_token, user_id, text)
 
 
 def create_postback_button(title, payload):
