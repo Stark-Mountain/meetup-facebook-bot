@@ -41,10 +41,11 @@ def handle_no_ask_question_url_postback(messaging_event, access_token, db_sessio
 def handle_schedule_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     talks = db_session.query(Talk).all()
-    talk_like_numbers = {talk.id: talk.count_likes() for talk in talks}
+    talk_like_numbers = {talk.id: talk.count_likes(db_session) for talk in talks}
     likes_by_user = list(db_session.query(Like).filter_by(user_facebook_id=sender_id))
     liked_talk_ids = [like.talk_id for like in likes_by_user]
-    return messaging.send_schedule(access_token, sender_id, talks, talk_like_numbers, liked_talk_ids)
+    return messaging.send_schedule(access_token, sender_id, talks, 
+                                   talk_like_numbers, liked_talk_ids)
 
 
 def handle_speaker_auth(messaging_event, access_token, db_session):
