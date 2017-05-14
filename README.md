@@ -1,18 +1,18 @@
 # meetup-facebook-bot
 
-[![travis build][build-badge]][build]
+[![Build Status][build-badge]][build]
 [![Coverage Status][coverage-badge]][coverage]
 [![Code Climate][code-climate-badge]][code-climate]
 [![License: MIT][license-badge]][license]
 
-[build-badge]: https://img.shields.io/travis/Stark-Mountain/meetup-facebook-bot.svg?style=flat-square
-[build]: https://travis-ci.org/Stark-Mountain/meetup-facebook-bot?branch=master
-[coverage-badge]: https://coveralls.io/repos/github/Stark-Mountain/meetup-facebook-bot/badge.svg?style=flat-square
-[coverage]: https://coveralls.io/github/Stark-Mountain/meetup-facebook-bot?branch=master
-[code-climate-badge]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot.png?branch=master?style=flat-square
-[code-climate]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot?branch=master
-[license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square
-[license]: https://opensource.org/licenses/MIT?branch=master
+[build-badge]: https://travis-ci.org/Stark-Mountain/meetup-facebook-bot.svg?branch=master
+[build]: https://travis-ci.org/Stark-Mountain/meetup-facebook-bot
+[coverage-badge]: https://coveralls.io/repos/github/Stark-Mountain/meetup-facebook-bot/badge.svg?branch=master
+[coverage]: https://coveralls.io/github/Stark-Mountain/meetup-facebook-bot
+[code-climate-badge]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot.png?branch=master
+[code-climate]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot
+[license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg?branch=master
+[license]: https://opensource.org/licenses/MIT
     
     
 [<img src="https://github.com/fbsamples/messenger-bot-samples/blob/master/docs/assets/ViewMessenger.png" width="200">](https://m.me/cryptictor11398)
