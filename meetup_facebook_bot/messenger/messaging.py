@@ -13,11 +13,11 @@ def send_rate_menu(access_token, user_id, talk, db_session):
     rate_button_payload = 'like talk %d' % talk.id
     cancel_button_title = 'Отменить'
     cancel_button_payload = 'cancel payload'
-    rate_button = generate_quick_reply_text_button(
+    rate_button = create_quick_reply_text_button(
         rate_button_title,
         rate_button_payload
     )
-    cancel_button = generate_quick_reply_text_button(
+    cancel_button = create_quick_reply_text_button(
         cancel_button_title,
         cancel_button_payload
     )
@@ -35,15 +35,15 @@ def send_like_confirmation(access_token, user_id, talk, db_session):
     return send_text_message(access_token, user_id, like_text_message)
 
 
-def generate_ask_question_button(ask_question_url):
+def create_ask_question_button(ask_question_url):
     title = 'Задать вопрос'
     if ask_question_url is None:
         payload = 'ask question no url'
-        return generate_postback_button(title, payload)
-    return generate_web_url_button(title, ask_question_url)
+        return create_postback_button(title, payload)
+    return create_web_url_button(title, ask_question_url)
 
 
-def generate_schedule_page_subtitle(like_text, number_of_likes, speaker_name):
+def create_schedule_page_subtitle(like_text, number_of_likes, speaker_name):
     return '{like_text}\nЛайков: {number_of_likes}\nСпикер: {name}'.format(
         like_text=like_text,
         number_of_likes=number_of_likes,
@@ -59,22 +59,22 @@ def send_schedule(access_token, user_id, talks, db_session):
             like_text = 'Вы лайкнули этот доклад'
         else:
             like_text = 'Вы не оценили этот докад'
-        page_subtitle = generate_schedule_page_subtitle(
+        page_subtitle = create_schedule_page_subtitle(
             like_text,
             number_of_likes,
             talk.speaker.name
         )
-        more_talk_info_button = generate_postback_button(
+        more_talk_info_button = create_postback_button(
             title='Получить подробности',
             payload='info talk %d' % talk.id
         )
-        rate_button = generate_postback_button(
+        rate_button = create_postback_button(
             title='Оценить',
             payload='rate talk %d' % talk.id
         )
-        ask_question_button = generate_ask_question_button(talk.ask_question_url)
+        ask_question_button = create_ask_question_button(talk.ask_question_url)
         buttons = [more_talk_info_button, rate_button, ask_question_button]
-        page = generate_generic_template_page(talk.title, page_subtitle, buttons)
+        page = create_generic_template_page(talk.title, page_subtitle, buttons)
         generic_template_pages.append(page)
     return send_generic_template(access_token, user_id, generic_template_pages)
 
@@ -102,7 +102,7 @@ def send_no_ask_question_url_warning(access_token, sender_id):
     return send_text_message(access_token, sender_id, text)
 
 
-def generate_postback_button(title, payload):
+def create_postback_button(title, payload):
     button = {
         'type': 'postback',
         'title': title,
@@ -111,7 +111,7 @@ def generate_postback_button(title, payload):
     return button
 
 
-def generate_web_url_button(title, url):
+def create_web_url_button(title, url):
     button = {
         'type': 'web_url',
         'url': url,
@@ -120,7 +120,7 @@ def generate_web_url_button(title, url):
     return button
 
 
-def generate_quick_reply_text_button(title, payload):
+def create_quick_reply_text_button(title, payload):
     button = {
         'content_type': 'text',
         'title': title,
@@ -129,7 +129,7 @@ def generate_quick_reply_text_button(title, payload):
     return button
 
 
-def generate_generic_template_page(title, subtitle, buttons):
+def create_generic_template_page(title, subtitle, buttons):
     page = {
         'title': title,
         'subtitle': subtitle,
