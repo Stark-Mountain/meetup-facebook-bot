@@ -113,9 +113,9 @@ class MessageHandlersTestCase(TestCase):
         talks_mock = [MagicMock(talk_id=1), MagicMock(talk_id=2)]
         server.db_session.query().all = MagicMock(return_value=talks_mock)
         for talk_mock in talks_mock:
-            talk_mock.id = 1
+            talk_mock.id += 1
+            print('talk_mock.id = ', talk_mock.id)
             talk_mock.count_likes = MagicMock(return_value=1)
-        for talk_mock in talks_mock:
             talk_like_numbers_mock = {talk_mock.id: talk_mock.count_likes()}
         talk_like_ids_mock = []
         message_handlers.handle_schedule_command(messaging_event, self.access_token, server.db_session)
