@@ -56,43 +56,47 @@ class WebhookRouteTestCase(TestCase):
         return self.generate_facebook_request('message', message)
 
     @patch('meetup_facebook_bot.server.message_handlers')
-    def test_schedule_command_handling(self, message_handlers_mock):
-        message_handlers_mock.handle_speaker_auth = MagicMock()
-        talks_mock = [MagicMock(talk_id=1), MagicMock(talk_id=2)]
-        server.db_session.query().all = MagicMock(return_value=talks_mock)
-        known_input = self.generate_quick_reply('schedule payload')
-        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
-        number_of_calls = message_handlers_mock.handle_speaker_auth.call_count
-        self.assertEqual(number_of_calls, 1)
-
-
-    @patch('meetup_facebook_bot.messenger.message_handlers.messaging.send_talk_info')
-    def test_more_talk_info_command_handling(self, send_talk_info_mock):
-        talk_mock = MagicMock()
-        server.db_session.query().get = MagicMock(return_value=talk_mock)
+    def test_handle_talk_info_command_gets_called(self, message_handlers_mock):
+        message_handlers_mock.handle_talk_info_command = MagicMock()
         known_input = self.generate_postback('info talk 1')
         self.app.post('/', data=json.dumps(known_input), content_type='application/json')
-        send_talk_info_mock.assert_called_once_with(
-            self.access_token,
-            self.sender_id,
-            talk_mock
-        )
-
-    @patch('meetup_facebook_bot.messenger.message_handlers.Talk')
-    def test_talk_like_command_handling(self, talk_class_mock):
-        talk_mock = MagicMock(talk_id=1)
-        talk_mock.revert_like = MagicMock()
-        server.db_session.query(talk_class_mock).get = MagicMock(return_value=talk_mock)
-        known_input = self.generate_quick_reply('like talk 1')
-        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
-        talk_mock.revert_like.assert_called_once_with(
-            self.sender_id,
-            server.db_session
-        )
+        number_of_calls = message_handlers_mock.handle_talk_info_command.call_count
+        self.assertEqual(number_of_calls, 1)    
 
     @patch('meetup_facebook_bot.server.message_handlers')
-    def test_speaker_auth_gets_called(self, message_handlers_mock):
-        message_handlers_mock.handle_speaker_auth = MagicMock()
+    def test_handle_talk_rate_command_gets_called(self, message_handlers_mock):
+        message_handlers_mock.handle_talk_rate_command = MagicMock()
+        known_input = self.generate_postback('rate talk 1')
+        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
+        number_of_calls = message_handlers_mock.handle_talk_rate_command.call_count
+        self.assertEqual(number_of_calls, 1)   
+
+    @patch('meetup_facebook_bot.server.message_handlers')
+    def test_handle_talk_like_command_gets_called(self, message_handlers_mock):
+        message_handlers_mock.handle_talk_like_command = MagicMock()
+        known_input = self.generate_quick_reply('like talk 1')
+        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
+        number_of_calls = message_handlers_mock.handle_talk_like_command.call_count
+        self.assertEqual(number_of_calls, 1)
+
+    @patch('meetup_facebook_bot.server.message_handlers')
+    def test_handle_no_ask_question_url_postback_gets_called(self, message_handlers_mock):
+        message_handlers_mock.handle_no_ask_question_url_postback = MagicMock()
+        known_input = self.generate_postback('ask question no url')
+        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
+        number_of_calls = message_handlers_mock.handle_no_ask_question_url_postback.call_count
+        self.assertEqual(number_of_calls, 1)
+
+    @patch('meetup_facebook_bot.server.message_handlers')
+    def test_handle_schedule_command_gets_called(self, message_handlers_mock):
+        message_handlers_mock.handle_schedule_command = MagicMock()
+        known_input = self.generate_quick_reply('schedule payload')
+        self.app.post('/', data=json.dumps(known_input), content_type='application/json')
+        number_of_calls = message_handlers_mock.handle_schedule_command.call_count
+        self.assertEqual(number_of_calls, 1)   
+
+    @patch('meetup_facebook_bot.server.message_handlers')
+    def test_handle_speaker_auth_gets_called(self, message_handlers_mock):
         message_handlers_mock.handle_speaker_auth = MagicMock()
         known_input = self.generate_simple_text_message()
         self.app.post('/', data=json.dumps(known_input), content_type='application/json')
