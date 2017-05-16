@@ -9,6 +9,7 @@ from meetup_facebook_bot.messenger import messaging
 def handle_talk_info_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     payload = messaging_event['postback']['payload']
+    logging.debug('handling payload: %s\n with sender_id:%s' % (payload, sender_id))
     talk_id = int(payload.split(' ')[-1])
     talk = db_session.query(Talk).get(talk_id)
     if not talk:
@@ -20,6 +21,7 @@ def handle_talk_info_command(messaging_event, access_token, db_session):
 def handle_talk_rate_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     payload = messaging_event['postback']['payload']
+    logging.debug('handling payload: %s\n with sender_id:%s' % (payload, sender_id))
     talk_id = int(payload.split(' ')[-1])
     talk = db_session.query(Talk).get(talk_id)
     if not talk:
@@ -32,6 +34,7 @@ def handle_talk_rate_command(messaging_event, access_token, db_session):
 def handle_talk_like_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
     payload = messaging_event['message']['quick_reply']['payload']
+    logging.debug('handling payload: %s\n with sender_id:%s' % (payload, sender_id))
     talk_id = int(payload.split(' ')[-1])
     talk = db_session.query(Talk).get(talk_id)
     if not talk:
@@ -44,11 +47,13 @@ def handle_talk_like_command(messaging_event, access_token, db_session):
 
 def handle_no_ask_question_url_postback(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
+    logging.debug('handling message with sender_id:%s' % sender_id)
     return messaging.send_no_ask_question_url_warning(access_token, sender_id)
 
 
 def handle_schedule_command(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
+    logging.debug('handling message with sender_id:%s' % sender_id)
     talks = db_session.query(Talk).all()
     talk_like_numbers = {talk.id: talk.count_likes(db_session) for talk in talks}
     likes_by_user = list(db_session.query(Like).filter_by(user_facebook_id=sender_id))
@@ -59,6 +64,7 @@ def handle_schedule_command(messaging_event, access_token, db_session):
 
 def handle_speaker_auth(messaging_event, access_token, db_session):
     sender_id = messaging_event['sender']['id']
+    logging.debug('handling message with sender_id:%s' % sender_id)
     message_text = messaging_event['message']['text']
     speaker = db_session.query(Speaker).filter_by(token=message_text).scalar()
     if not speaker:
