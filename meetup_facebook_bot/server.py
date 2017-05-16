@@ -120,7 +120,7 @@ def webhook():
     ]
     access_token = app.config['ACCESS_TOKEN']
     for messaging_event in messaging_events:
-        logging.debug('messanging event:%s') % messaging_event
+        logging.debug('messanging event:%s' % messaging_event)
         for message_validator, message_handler in message_processors:
             if message_validator(messaging_event):
                 message_handler(messaging_event, access_token, db_session)
