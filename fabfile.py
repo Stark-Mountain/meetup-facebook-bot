@@ -18,6 +18,7 @@ VENV_FOLDER = 'venv'
 VENV_BIN_DIRECTORY = os.path.join(PERMANENT_PROJECT_FOLDER, VENV_FOLDER, 'bin')
 DHPARAM_PATH = '/etc/ssl/certs/dhparam.pem'
 SSL_PARAMS_PATH = '/etc/nginx/snippets/ssl-params.conf'
+LOG_PATH = '/var/log/meetup-facebook-bot'
 
 
 def install_python():
@@ -130,6 +131,10 @@ def create_permanent_folder():
         sudo('mkdir %s' % PERMANENT_PROJECT_FOLDER)
 
 
+def create_log_folder():
+    sudo('mkdir -m 777 -p %s' % LOG_PATH)
+
+
 def create_service_file():
     service_file_config = {
         'user': env.user,
@@ -240,6 +245,7 @@ def bootstrap(branch='master'):
     env.sudo_password = getpass('Initial value for env.sudo_password: ')
     env.domain_name = prompt('Enter your domain name:', default='meetup_facebook_bot')
     create_permanent_folder()
+    create_log_folder()
     install_postgres()
     database_url = setup_postgres(username=env.user, database_name=env.user)
     renew_ini_file(database_url)
