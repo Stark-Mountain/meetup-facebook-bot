@@ -11,7 +11,7 @@
 [coverage]: https://coveralls.io/github/Stark-Mountain/meetup-facebook-bot
 [code-climate-badge]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot.png?branch=master
 [code-climate]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot
-[license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg?branch=master
+[license-badge]: https://img.shields.io/badge/License-MIT-green.svg?branch=master
 [license]: https://opensource.org/licenses/MIT
     
     
