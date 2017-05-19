@@ -3,7 +3,7 @@ import logging.config
 from meetup_facebook_bot.server import app
 
 
-logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
+logging.config.fileConfig('../meetup-facebook-bot/logging.conf')
 logger = logging.getLogger('root')
 
 

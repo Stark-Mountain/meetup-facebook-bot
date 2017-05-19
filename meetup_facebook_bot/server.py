@@ -28,7 +28,7 @@ db_session = Session()
 admin = Admin(app, name='Facebook Meetup Bot', template_mode='bootstrap3')
 admin.add_view(TalkView(Talk, db_session))
 admin.add_view(SpeakerView(Speaker, db_session))
-logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
+logging.config.fileConfig('../meetup-facebook-bot/logging.conf')
 logger = logging.getLogger('simpleExample')
 
 

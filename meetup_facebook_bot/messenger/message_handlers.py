@@ -6,7 +6,7 @@ from meetup_facebook_bot.models.like import Like
 from meetup_facebook_bot.messenger import messaging
 
 
-logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
+logging.config.fileConfig('../meetup-facebook-bot/logging.conf')
 logger = logging.getLogger('simpleExample')
 
 
