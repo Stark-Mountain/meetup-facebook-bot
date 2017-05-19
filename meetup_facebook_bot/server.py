@@ -29,7 +29,7 @@ admin = Admin(app, name='Facebook Meetup Bot', template_mode='bootstrap3')
 admin.add_view(TalkView(Talk, db_session))
 admin.add_view(SpeakerView(Speaker, db_session))
 logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
-logger = logging.getLogger('root')
+logger = logging.getLogger('simpleExample')
 
 
 class LoginForm(Form):
@@ -123,7 +123,7 @@ def webhook():
     ]
     access_token = app.config['ACCESS_TOKEN']
     for messaging_event in messaging_events:
-        logging.debug('messanging event:%s' % messaging_event)
+        logger.debug('messanging event:%s' % messaging_event)
         for message_validator, message_handler in message_processors:
             if message_validator(messaging_event):
                 message_handler(messaging_event, access_token, db_session)
