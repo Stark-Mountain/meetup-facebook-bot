@@ -1,18 +1,29 @@
 import logging
-import logging.handlers
+import time
+
+from logging.handlers import TimedRotatingFileHandler
 
 from meetup_facebook_bot.server import app
 
 
 LOG_FILENAME = '/var/log/meetup-facebook-bot/voron434.log'
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
-main_logger = logging.getLogger('MainLogger')
-main_logger.setLevel(logging.DEBUG)
-rotation_handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=20, backupCount=5)
-main_logger.addHandler(rotation_handler)
+
+def create_timed_rotating_log(path):
+    logger = logging.getLogger("Rotating Log")
+    logger.setLevel(logging.INFO)
+
+    handler = TimedRotatingFileHandler(path,
+                                       when="m",
+                                       interval=1,
+                                       backupCount=5)
+    logger.addHandler(handler)
+
+    for i in range(6):
+        logger.info("This is a test!")
+        time.sleep(75)
 
 
 if __name__ == '__main__':
-    for i in range(100):
-        main_logger.debug('Start new build')
+    create_timed_rotating_log(LOG_FILENAME)
     app.run()
