@@ -13,5 +13,6 @@ main_logger.addHandler(rotation_handler)
 
 
 if __name__ == '__main__':
-    logging.debug('Start new build')
+    for i in range(100):
+        main_logger.debug('Start new build')
     app.run()
