@@ -17,6 +17,7 @@ from meetup_facebook_bot.models.speaker import Speaker
 from meetup_facebook_bot.models.talk import Talk
 from meetup_facebook_bot.views.SpeakerView import SpeakerView
 from meetup_facebook_bot.views.TalkView import TalkView
+from wsgi import logger
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -120,7 +121,7 @@ def webhook():
     ]
     access_token = app.config['ACCESS_TOKEN']
     for messaging_event in messaging_events:
-        logging.debug('messanging event:%s' % messaging_event)
+        logger.debug('messanging event:%s' % messaging_event)
         for message_validator, message_handler in message_processors:
             if message_validator(messaging_event):
                 message_handler(messaging_event, access_token, db_session)
