@@ -7,7 +7,7 @@ from meetup_facebook_bot.messenger import messaging
 
 
 logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
-logger = logging.getLogger('simpleExample')
+logger = logging.getLogger('root')
 
 
 def handle_talk_info_command(messaging_event, access_token, db_session):
