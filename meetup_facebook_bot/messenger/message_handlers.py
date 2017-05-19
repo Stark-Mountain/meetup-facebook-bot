@@ -1,4 +1,3 @@
-import logging
 import logging.config
 
 from meetup_facebook_bot.models.talk import Talk
@@ -7,7 +6,7 @@ from meetup_facebook_bot.models.like import Like
 from meetup_facebook_bot.messenger import messaging
 
 
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
 logger = logging.getLogger('simpleExample')
 
 

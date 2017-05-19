@@ -1,6 +1,5 @@
 import random
 import time
-import logging
 import logging.config
 
 from flask import (Flask, flash, redirect, render_template, request, session,
@@ -29,7 +28,7 @@ db_session = Session()
 admin = Admin(app, name='Facebook Meetup Bot', template_mode='bootstrap3')
 admin.add_view(TalkView(Talk, db_session))
 admin.add_view(SpeakerView(Speaker, db_session))
-logging.config.fileConfig('logging.conf')
+logging.config.fileConfig('/var/www/meetup-facebook-bot/logging.conf')
 logger = logging.getLogger('simpleExample')
 
 
