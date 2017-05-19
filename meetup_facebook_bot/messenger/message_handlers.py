@@ -1,8 +1,12 @@
+import logging
+
 from meetup_facebook_bot.models.talk import Talk
 from meetup_facebook_bot.models.speaker import Speaker
 from meetup_facebook_bot.models.like import Like
 from meetup_facebook_bot.messenger import messaging
-from log_config import logger
+
+
+logger = logging.getLogger('message_handlers_logger')
 
 
 def handle_talk_info_command(messaging_event, access_token, db_session):
