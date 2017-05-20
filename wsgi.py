@@ -1,10 +1,5 @@
-import logging.config
-
+from log_config import logger
 from meetup_facebook_bot.server import app
-
-
-logging.config.fileConfig('../meetup-facebook-bot/logging.conf')
-logger = logging.getLogger('simpleExample')
 
 
 if __name__ == '__main__':
