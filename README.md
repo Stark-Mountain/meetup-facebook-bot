@@ -41,10 +41,6 @@ Prerequisites: a computer with Ubuntu 16.04 and an associated domain name; regis
 6. Go to your domain and make sure everything's working.
 
 # How to run tests
-After all dependencies are installed (`pip3 install -r requirements.txt`), run the following command from the root folder of the project:
+After all dependencies are installed (`pip install -r requirements.txt`), run the following command from the root folder of the project:
 
-`$ python3 -m pytest tests --cov app --cov-report html`
-
-View the generated html report with
-
-`open htmlcov/index.html`
+`$ python3 -m pytest tests`
