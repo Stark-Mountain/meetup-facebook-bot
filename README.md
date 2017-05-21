@@ -25,10 +25,11 @@ With the carousel consisting of talks, it allows the users:
 - ask the speaker questions
 
 The interface is currently in Russian (see [#101](https://github.com/Stark-Mountain/meetup-facebook-bot/issues/101))
-
+![bot conversation](http://i.imgur.com/56efUoA.png)
 # How to use
 
 Once you've set the bot up (see below), just go to `https://(yourdomain)/login` and fill out the Speaker and Talk tables. (Ignore the `token` field of Speaker table).
+![/admin screenshot](http://i.imgur.com/Gsf04UA.png)
 
 # How to setup
 Prerequisites: a computer with Ubuntu 16.04 and an associated domain name; registered [Facebook app](https://developers.facebook.com/docs/messenger-platform/guides/setup).
