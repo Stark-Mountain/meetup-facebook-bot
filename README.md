@@ -17,7 +17,18 @@
     
 [<img src="https://github.com/fbsamples/messenger-bot-samples/blob/master/docs/assets/ViewMessenger.png" width="200">](https://m.me/cryptictor11398)
 
-FIXME: write the description
+An easy-to-setup bot that helps you to communicate with your meetup attendees.
+
+With the carousel consisting of talks, it allows the users:
+- receive detailed description of a talk
+- rate a talk
+- ask the speaker questions
+
+The interface is currently in Russian (see [#101](https://github.com/Stark-Mountain/meetup-facebook-bot/issues/101))
+
+# How to use
+
+Once you've set the bot up (see below), just go to `https://(yourdomain)/login` and fill out the Speaker and Talk tables. (Ignore the `token` field of Speaker table).
 
 # Setup
 1. Register [Facebook](https://developers.facebook.com/docs/messenger-platform/guides/setup) and [Heroku](https://dashboard.heroku.com) apps. 
