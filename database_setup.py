@@ -1,8 +1,6 @@
-import json
 import sys
 
 from meetup_facebook_bot import server
-from meetup_facebook_bot.models import base, talk, speaker
 
 
 if server.engine.dialect.has_table(server.engine.connect(), "talks"):
