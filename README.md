@@ -13,9 +13,6 @@
 [code-climate]: https://codeclimate.com/github/Stark-Mountain/meetup-facebook-bot
 [license-badge]: https://img.shields.io/badge/License-MIT-yellow.svg?branch=master
 [license]: https://opensource.org/licenses/MIT
-    
-    
-[<img src="https://github.com/fbsamples/messenger-bot-samples/blob/master/docs/assets/ViewMessenger.png" width="200">](https://m.me/cryptictor11398)
 
 An easy-to-setup bot that helps you to communicate with your meetup attendees.
 
